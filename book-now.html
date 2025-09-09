@@ -6,86 +6,38 @@
   <title>Complete Your Booking - FrameHouseCinema</title>
   <meta name="description" content="Complete your booking with FrameHouseCinema">
   <link rel="stylesheet" href="style.css">
-</head>
-<body>
-  <!-- HEADER -->
-  <header class="site-header">
-    <div class="brand">
-      <a href="index.html">
-        <img class="brand-logo" src="Media/logo/FrameHouseCinema Concept Logo 3.jpg" alt="FrameHouseCinema logo" />
-        <span class="brand-name">FrameHouseCinema</span>
-      </a>
-    </div>
-    <nav class="top-nav">
-      <a href="scenery.html">Scenery</a>
-      <a href="people.html">People</a>
-      <a href="lighting.html">Lighting</a>
-      <a href="architecture.html">Architecture</a>
-      <a href="events.html">Events</a>
-      <a href="videos.html">Videos</a>
-    </nav>
-  </header>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 
-  <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      // Initialize first step
-      document.getElementById('step1').style.display = 'block';
-
-      // Get the service type from URL parameters
-      const urlParams = new URLSearchParams(window.location.search);
-      const serviceType = urlParams.get('service');
-      document.getElementById('service-type').value = serviceType;
-
-      // Update navigation functions
-      window.goToStep2 = function() {
-        document.getElementById('step1').style.display = 'none';
-        document.getElementById('step2').style.display = 'block';
-        updateProgress(2);
-      };
-
-      window.goToStep3 = function() {
-        const date = document.getElementById('booking-date').value;
-        const time = document.getElementById('booking-time').value;
-        if (!date || !time) {
-          alert('Please select both date and time');
-          return;
-        }
-        document.getElementById('step2').style.display = 'none';
-        document.getElementById('step3').style.display = 'block';
-        updateProgress(3);
-      };
-
-      function updateProgress(step) {
-        const steps = document.querySelectorAll('.progress-step');
-        steps.forEach((el, index) => {
-          if (index + 1 < step) {
-            el.classList.add('completed');
-            el.classList.remove('active');
-          } else if (index + 1 === step) {
-            el.classList.add('active');
-            el.classList.remove('completed');
-          } else {
-            el.classList.remove('active', 'completed');
-          }
-        });
-      }
-    });
-
-    async function submitBooking() {
-      // Here you would:
-      // 1. Validate all inputs
-      // 2. Process payment through Stripe
-      // 3. Save booking to your database
-      // 4. Show confirmation
-      alert('Booking submitted successfully!'); // Replace with actual implementation
-    }
-  </script>dn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <!-- JavaScript Dependencies -->
   <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
   <script src="https://js.stripe.com/v3/"></script>
   <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA-test-key-for-development&libraries=places&callback=initMap" async defer></script>
   <script src="js/navigation.js"></script>
   <script src="js/booking.js"></script>
   <script src="js/service-selection.js"></script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Initialize stripe
+      const stripe = Stripe('your_publishable_key');
+      const elements = stripe.elements();
+      const card = elements.create('card');
+      card.mount('#card-element');
+
+      // Initialize first step
+      document.getElementById('step1').style.display = 'block';
+
+      // Initialize flatpickr
+      flatpickr("#booking-date", {
+        enableTime: true,
+        minTime: "10:00",
+        maxTime: "20:00",
+        dateFormat: "Y-m-d H:i",
+        altInput: true,
+        altFormat: "F j, Y h:i K"
+      });
+    });
+  </script>
   <style>
     .change-service-btn {
       display: inline-block;
@@ -146,6 +98,42 @@
       textarea {
         font-size: 16px; /* Prevents iOS zoom */
       }
+    }
+
+    .button-group {
+      display: flex;
+      gap: 1rem;
+      margin-top: 2rem;
+    }
+
+    .back-button {
+      flex: 0 0 auto;
+      padding: 0.75rem 1.5rem;
+      background: var(--bg);
+      border: 1px solid var(--line);
+      color: var(--text);
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .back-button:hover {
+      background: var(--card);
+    }
+
+    .next-button {
+      flex: 1;
+      padding: 0.75rem 1.5rem;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .next-button:hover {
+      background: var(--accent-dark);
     }
 
     .service-selection-container {
@@ -291,22 +279,38 @@
       font-size: clamp(0.9rem, 2.5vw, 1rem);
     }
 
-    /* Simplified time selection */
-    .form-group input[type="time"],
-    .form-group input[type="date"] {
-      width: 100%;
-      padding: 0.75rem;
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
-      font-size: 1rem;
-      background: var(--bg);
+    .time-slots {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 120px), 1fr));
+      gap: clamp(0.5rem, 2vw, 1rem);
+      margin-top: 1rem;
     }
 
-    .form-group input[type="time"]:focus,
-    .form-group input[type="date"]:focus {
-      outline: none;
+    .time-slot {
+      padding: clamp(0.5rem, 2vw, 0.75rem);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      text-align: center;
+      font-size: clamp(0.9rem, 2.5vw, 1rem);
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .time-slot:hover:not(.disabled) {
       border-color: var(--accent);
-      box-shadow: 0 0 0 2px rgba(0, 122, 255, 0.1);
+      background: var(--card);
+    }
+
+    .time-slot.selected {
+      background: var(--accent);
+      color: white;
+      border-color: var(--accent);
+    }
+
+    .time-slot.disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      background: var(--line);
     }
 
     .progress-bar {
@@ -380,9 +384,9 @@
 <body>
   <!-- HEADER -->
   <header class="site-header">
-    <div class="brand">
-      <a href="index.html">
-        <img class="brand-logo" src="Media/logo/FrameHouseCinema Concept Logo 3.jpg" alt="FrameHouseCinema logo" />
+    <div class="brand" style="display:flex;align-items:center;gap:1rem;">
+      <a href="index.html" style="display:flex;align-items:center;gap:1rem;text-decoration:none;color:inherit;">
+        <img class="brand-logo" src="../Media/logo/FrameHouseCinema Concept Logo 3.jpg" alt="FrameHouseCinema logo" />
         <span class="brand-name">FrameHouseCinema</span>
       </a>
     </div>
@@ -411,17 +415,20 @@
         <label for="special-requests">Special Requests or Notes</label>
         <textarea id="special-requests" rows="4" placeholder="Tell us about any specific requirements..."></textarea>
       </div>
-      <button class="next-button" onclick="goToStep2()">Next: Choose Date & Time</button>
+      <button class="next-button" onclick="nextStep(2)">Next: Choose Date & Time</button>
     </div>
 
     <!-- Step 2: Date & Time -->
     <div class="booking-step" id="step2" style="display: none;">
       <h2>Select Date & Time</h2>
       <div class="form-group">
-        <label for="booking-date">Select Date</label>
-        <input type="text" id="booking-date" placeholder="Choose your date">
+        <label for="booking-date">Select Date and Time</label>
+        <input type="text" id="booking-date" placeholder="Click to choose date and time">
       </div>
-      <button class="next-button" onclick="goToStep3()">Next: Choose Location</button>
+      <div class="button-group">
+        <button class="back-button" onclick="prevStep(2)">Back</button>
+        <button class="next-button" onclick="nextStep(3)">Next: Choose Location</button>
+      </div>
     </div>
 
     <!-- Step 3: Location -->
@@ -460,17 +467,10 @@
   </div>
 
   <script>
-    let selectedTimeSlot = null;
     const stripe = Stripe('your_publishable_key'); // You'll need to replace this with your actual Stripe key
     const elements = stripe.elements();
     const card = elements.create('card');
     card.mount('#card-element');
-
-    // Initialize flatpickr date picker
-    flatpickr("#booking-date", {
-      minTime: "10:00",
-      maxTime: "20:00",
-
   </script>
 
   <script async defer

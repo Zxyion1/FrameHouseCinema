@@ -8,18 +8,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Add your favorite images here (add/remove as needed)
     const images = [
-        'Media/architecture/IMG_4218.JPG',
-        'Media/architecture/IMG_4561.JPG',
-        'Media/architecture/IMG_5321.JPG',
-        'Media/scenery/IMG_3210.JPG',
-        'Media/scenery/IMG_0489.JPG',
-        'Media/scenery/IMG_2764.JPG',
-        'Media/people/IMG_1499.JPG',
-        'Media/people/IMG_4889.JPG',
-        'Media/people/IMG_4925.JPG',
-        'Media/lighting/IMG_0705.JPG',
-        'Media/lighting/IMG_3498.JPG',
-        'Media/lighting/IMG_3541.JPG'
+        '../Media/architecture/IMG_4218.JPG',
+        '../Media/architecture/IMG_4561.JPG',
+        '../Media/architecture/IMG_5321.JPG',
+        '../Media/scenery/IMG_3210.JPG',
+        '../Media/scenery/IMG_0489.JPG',
+        '../Media/scenery/IMG_2764.JPG',
+        '../Media/people/IMG_1499.JPG',
+        '../Media/people/IMG_4889.JPG',
+        '../Media/people/IMG_4925.JPG',
+        '../Media/lighting/IMG_0705.JPG',
+        '../Media/lighting/IMG_3498.JPG',
+        '../Media/lighting/IMG_3541.JPG'
     ];
 
     let current = 0;
