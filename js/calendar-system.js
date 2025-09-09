@@ -62,26 +62,24 @@ function createTimeSlots() {
         "7:00 PM", "8:00 PM"
     ];
 
-    const container = document.createElement('div');
-    container.id = 'time-slots';
-    container.className = 'time-slots';
+    const timeSlotsContainer = document.getElementById('time-slots');
+    if (!timeSlotsContainer) return;
 
-    const grid = document.createElement('div');
-    grid.className = 'time-slots-grid';
+    // Clear existing slots
+    timeSlotsContainer.innerHTML = '';
 
     timeSlots.forEach(time => {
         const slot = document.createElement('button');
         slot.className = 'time-slot';
         slot.textContent = time;
         slot.onclick = () => selectTimeSlot(time, slot);
-        grid.appendChild(slot);
+        timeSlotsContainer.appendChild(slot);
     });
 
-    container.appendChild(grid);
-
-    const dateContainer = document.getElementById('date-time-container');
-    if (dateContainer) {
-        dateContainer.appendChild(container);
+    // Show the time slots section
+    const timeSection = document.getElementById('time-slots-section');
+    if (timeSection) {
+        timeSection.style.display = 'block';
     }
 }
 

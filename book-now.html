@@ -15,9 +15,10 @@
   <script src="js/navigation.js"></script>
   <script src="js/booking.js"></script>
   <script src="js/service-selection.js"></script>
+  <script src="js/time-selection.js"></script>
 
   <style>
-    .date-time-container {
+    .booking-section {
       background: var(--card);
       padding: 2rem;
       border-radius: var(--radius);
@@ -25,46 +26,62 @@
       box-shadow: var(--shadow);
     }
 
-    .calendar-group {
-      margin-bottom: 2rem;
+    .section-title {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: var(--fg);
+      margin-bottom: 1.5rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid var(--line);
     }
 
-    .time-slots {
-      margin-top: 2rem;
+    /* Calendar Styles */
+    .calendar-section {
+      margin-bottom: 3rem;
+    }
+
+    /* Time Slots Section */
+    .time-slots-section {
       background: var(--bg);
-      padding: 1.5rem;
+      padding: 2rem;
       border-radius: var(--radius);
       border: 1px solid var(--line);
+      margin-top: 2rem;
+      display: none; /* Hidden by default until date is selected */
     }
 
     .time-slots-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
       gap: 1rem;
       margin-top: 1rem;
     }
 
     .time-slot {
-      padding: 0.75rem 1rem;
+      padding: 1rem;
       background: white;
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
+      border: 2px solid var(--line);
+      border-radius: 50px; /* Makes it more bubble-like */
       cursor: pointer;
-      transition: all 0.2s ease;
+      transition: all 0.3s ease;
       font-size: 0.9rem;
       text-align: center;
+      font-weight: 500;
+      color: var(--fg);
     }
 
     .time-slot:hover:not(:disabled) {
       transform: translateY(-2px);
       border-color: var(--accent);
-      box-shadow: 0 4px 12px rgba(0, 122, 255, 0.1);
+      box-shadow: 0 4px 12px rgba(0, 122, 255, 0.15);
+      background: var(--card);
     }
 
     .time-slot.selected {
       background: var(--accent);
       color: white;
       border-color: var(--accent);
+      box-shadow: 0 4px 12px rgba(0, 122, 255, 0.2);
     }
 
     .time-slot:disabled {
