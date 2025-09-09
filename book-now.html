@@ -43,7 +43,7 @@
     /* Time Slots Section */
     .time-slots-section {
       background: var(--bg);
-      padding: 2rem;
+      padding: 1.5rem;
       border-radius: var(--radius);
       border: 1px solid var(--line);
       margin-top: 2rem;
@@ -52,22 +52,26 @@
 
     .time-slots-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-      gap: 1rem;
+      grid-template-columns: repeat(4, 1fr); /* Fixed 4 columns */
+      gap: 0.75rem;
       margin-top: 1rem;
+      max-width: 600px; /* Limit maximum width */
+      margin-left: auto;
+      margin-right: auto;
     }
 
     .time-slot {
-      padding: 1rem;
+      padding: 0.75rem 0.5rem;
       background: white;
       border: 2px solid var(--line);
-      border-radius: 50px; /* Makes it more bubble-like */
+      border-radius: 25px; /* Slightly smaller radius */
       cursor: pointer;
       transition: all 0.3s ease;
-      font-size: 0.9rem;
+      font-size: 0.85rem;
       text-align: center;
       font-weight: 500;
       color: var(--fg);
+      width: 100%;
     }
 
     .time-slot:hover:not(:disabled) {
@@ -159,32 +163,46 @@
       width: 100%;
       padding: 1rem;
       margin-top: 2rem;
-      background: var(--accent);
+      background: #16a34a; /* Green color for confirmation */
       color: white;
       border: none;
       border-radius: var(--radius);
       font-size: 1.1rem;
-      font-weight: 500;
+      font-weight: 600;
       cursor: pointer;
       transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
     }
     
     .confirm-button:disabled {
       opacity: 0.5;
       cursor: not-allowed;
       background: var(--muted);
+      transform: none;
+      box-shadow: none;
     }
     
-    .confirm-button.active {
-      background: var(--accent);
+    .confirm-button:not(:disabled) {
+      background: #16a34a;
       transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(0, 122, 255, 0.2);
+      box-shadow: 0 4px 12px rgba(22, 163, 74, 0.2);
     }
     
     .confirm-button:hover:not(:disabled) {
-      background: #0066cc;
+      background: #15803d;
       transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(0, 122, 255, 0.2);
+      box-shadow: 0 4px 12px rgba(22, 163, 74, 0.3);
+    }
+    
+    .confirm-button:active:not(:disabled) {
+      transform: translateY(-1px);
+    }
+    
+    /* Add a checkmark when button is active */
+    .confirm-button:not(:disabled)::before {
+      content: '✓';
+      margin-right: 8px;
     }
   </style>
   
@@ -697,8 +715,14 @@
         if (step === 2) {
             const serviceType = document.getElementById('service-type').value;
             if (serviceType) {
+                // Reset any existing selections
+                sessionStorage.removeItem('bookingDetails');
+                document.querySelectorAll('.time-slot.selected').forEach(slot => {
+                    slot.classList.remove('selected');
+                });
+                
                 // Initialize calendar with flatpickr
-                flatpickr("#booking-date", {
+                const calendar = flatpickr("#booking-date", {
                     enableTime: false,
                     dateFormat: "Y-m-d",
                     minDate: "today",
@@ -778,31 +802,63 @@
         if (confirmBtn && nextBtn) {
             const hasDate = document.querySelector('.flatpickr-input').value !== '';
             const hasTime = document.querySelector('.time-slot.selected') !== null;
-            confirmBtn.disabled = !(hasDate && hasTime);
+            const hasDuration = document.getElementById('duration-select')?.value;
             
-            // When enabled, add event listener to confirmation button
-            if (!confirmBtn.disabled && !confirmBtn.hasListener) {
-                confirmBtn.addEventListener('click', function() {
-                    // Store the selected date and time
-                    const date = document.querySelector('.flatpickr-input').value;
-                    const time = document.querySelector('.time-slot.selected').textContent;
-                    const duration = document.getElementById('duration-select').value;
-                    
-                    // Store the booking details
-                    sessionStorage.setItem('bookingDetails', JSON.stringify({
-                        date: date,
-                        time: time,
-                        duration: duration
-                    }));
-                    
-                    // Hide confirm button, show and enable next button
-                    confirmBtn.style.display = 'none';
-                    nextBtn.style.display = 'block';
-                    nextBtn.disabled = false;
-                });
-                confirmBtn.hasListener = true;
+            // Only enable if we have all required selections
+            confirmBtn.disabled = !(hasDate && hasTime && hasDuration);
+            
+            // Clear any existing click handlers
+            confirmBtn.removeEventListener('click', handleConfirmClick);
+            
+            // Add click handler if all selections are made
+            if (!confirmBtn.disabled) {
+                confirmBtn.addEventListener('click', handleConfirmClick);
             }
         }
+    }
+    
+    function handleConfirmClick() {
+        const confirmBtn = document.getElementById('confirm-datetime-btn');
+        const nextBtn = document.querySelector('#step2 .next-button');
+        
+        if (confirmBtn && nextBtn) {
+            // Get all booking details
+            const date = document.querySelector('.flatpickr-input').value;
+            const time = document.querySelector('.time-slot.selected').textContent;
+            const duration = document.getElementById('duration-select').value;
+            const totalPrice = calculateTotalPrice(duration);
+            
+            // Store the booking details
+            const bookingDetails = {
+                date: date,
+                time: time,
+                duration: parseInt(duration),
+                totalPrice: totalPrice
+            };
+            
+            sessionStorage.setItem('bookingDetails', JSON.stringify(bookingDetails));
+            
+            // Visual confirmation
+            confirmBtn.textContent = '✓ Selection Confirmed';
+            confirmBtn.style.background = '#15803d';
+            
+            // Enable next step after a short delay
+            setTimeout(() => {
+                confirmBtn.style.display = 'none';
+                nextBtn.style.display = 'block';
+                nextBtn.disabled = false;
+                
+                // Auto-advance to next step
+                setTimeout(() => {
+                    goToStep(3);
+                }, 500);
+            }, 1000);
+        }
+    }
+    
+    function calculateTotalPrice(duration) {
+        const basePrice = 150; // Base price per hour
+        return basePrice * parseInt(duration);
     }
 
     function updateBookingPrice() {
