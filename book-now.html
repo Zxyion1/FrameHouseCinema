@@ -20,19 +20,23 @@
   <style>
     .booking-section {
       background: var(--card);
-      padding: 2rem;
+      padding: 1.5rem;
       border-radius: var(--radius);
-      margin-bottom: 2rem;
-      box-shadow: var(--shadow);
+      margin-bottom: 1.5rem;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+      max-width: 650px;
+      margin-left: auto;
+      margin-right: auto;
     }
 
     .section-title {
-      font-size: 1.5rem;
+      font-size: 1.2rem;
       font-weight: 600;
       color: var(--fg);
-      margin-bottom: 1.5rem;
+      margin-bottom: 1rem;
       padding-bottom: 0.5rem;
-      border-bottom: 2px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      text-align: center;
     }
 
     /* Calendar Styles */
@@ -184,20 +188,23 @@
     }
     
     .confirm-button {
-      display: block;
-      width: 100%;
-      padding: 1rem;
-      margin-top: 2rem;
-      background: #16a34a; /* Green color for confirmation */
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.6rem 1.2rem;
+      margin-top: 1.5rem;
+      background: #16a34a;
       color: white;
       border: none;
-      border-radius: var(--radius);
-      font-size: 1.1rem;
-      font-weight: 600;
+      border-radius: 15px;
+      font-size: 0.9rem;
+      font-weight: 500;
       cursor: pointer;
-      transition: all 0.3s ease;
-      position: relative;
-      overflow: hidden;
+      transition: all 0.2s ease;
+      min-width: 120px;
+      max-width: 200px;
+      margin-left: auto;
+      margin-right: auto;
     }
     
     .confirm-button:disabled {
@@ -210,24 +217,45 @@
     
     .confirm-button:not(:disabled) {
       background: #16a34a;
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(22, 163, 74, 0.2);
+      transform: translateY(-1px);
+      box-shadow: 0 2px 8px rgba(22, 163, 74, 0.15);
     }
     
     .confirm-button:hover:not(:disabled) {
       background: #15803d;
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(22, 163, 74, 0.3);
+      transform: translateY(-1px);
+      box-shadow: 0 2px 8px rgba(22, 163, 74, 0.2);
     }
     
     .confirm-button:active:not(:disabled) {
-      transform: translateY(-1px);
+      transform: translateY(0);
+      box-shadow: 0 1px 4px rgba(22, 163, 74, 0.1);
     }
     
     /* Add a checkmark when button is active */
     .confirm-button:not(:disabled)::before {
       content: '✓';
-      margin-right: 8px;
+      margin-right: 6px;
+      font-size: 0.9rem;
+    }
+
+    /* Common button hover effects */
+    .next-button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 2px 8px rgba(0, 122, 255, 0.15);
+    }
+
+    .next-button:active {
+      transform: translateY(0);
+      box-shadow: 0 1px 4px rgba(0, 122, 255, 0.1);
+    }
+
+    /* Disabled state for all buttons */
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none !important;
+      box-shadow: none !important;
     }
   </style>
   
@@ -307,34 +335,47 @@
 
     .button-group {
       display: flex;
-      gap: 1rem;
-      margin-top: 2rem;
+      align-items: center;
+      justify-content: center;
+      gap: 0.75rem;
+      margin-top: 1.5rem;
+      max-width: 500px;
+      margin-left: auto;
+      margin-right: auto;
     }
 
     .back-button {
       flex: 0 0 auto;
-      padding: 0.75rem 1.5rem;
+      padding: 0.6rem 1.2rem;
       background: var(--bg);
       border: 1px solid var(--line);
-      color: var(--text);
-      border-radius: var(--radius);
+      color: var(--fg);
+      border-radius: 15px;
       cursor: pointer;
       transition: all 0.2s ease;
+      font-size: 0.9rem;
+      font-weight: 500;
     }
 
     .back-button:hover {
       background: var(--card);
+      transform: translateY(-1px);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
     }
 
     .next-button {
-      flex: 1;
-      padding: 0.75rem 1.5rem;
+      flex: 0 1 auto;
+      min-width: 120px;
+      padding: 0.6rem 1.2rem;
       background: var(--accent);
       color: white;
       border: none;
-      border-radius: var(--radius);
+      border-radius: 15px;
       cursor: pointer;
       transition: all 0.2s ease;
+      font-size: 0.9rem;
+      font-weight: 500;
+      text-align: center;
     }
 
     .next-button:hover {
