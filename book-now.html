@@ -43,40 +43,53 @@
     /* Time Slots Section */
     .time-slots-section {
       background: var(--bg);
-      padding: 1rem;
+      padding: 1.25rem;
       border-radius: var(--radius);
       border: 1px solid var(--line);
       margin-top: 1.5rem;
       display: none; /* Hidden by default until date is selected */
-      max-width: 350px; /* Contain the width */
+      max-width: 650px; /* Wider to accommodate horizontal layout */
       margin-left: auto;
       margin-right: auto;
+      overflow: hidden; /* Ensure proper border-radius with flex items */
     }
 
     .time-slots-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr); /* 2 columns */
-      gap: 0.5rem; /* Reduced gap */
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
       margin-top: 1rem;
-      max-width: 300px; /* Smaller max-width for 2 columns */
+      max-width: 600px; /* Wider to accommodate horizontal layout */
       margin-left: auto;
       margin-right: auto;
+      justify-content: center;
     }
 
     .time-slot {
-      padding: 0.5rem 0.25rem; /* Smaller padding */
+      padding: 0.5rem 0.75rem; /* More horizontal padding */
       background: white;
-      border: 1px solid var(--line); /* Thinner border */
-      border-radius: 20px; /* Even smaller radius */
+      border: 1px solid var(--line);
+      border-radius: 20px;
       cursor: pointer;
       transition: all 0.3s ease;
-      font-size: 0.8rem; /* Smaller font */
+      font-size: 0.8rem;
       text-align: center;
       font-weight: 500;
       color: var(--fg);
-      width: 100%;
-      min-width: 90px; /* Ensure minimum width */
-      margin: 0 auto; /* Center in grid cell */
+      flex: 0 0 auto; /* Don't grow or shrink */
+      min-width: 85px; /* Slightly smaller min-width */
+      margin: 0;
+    }
+
+    /* Create two rows by forcing a break */
+    .time-slot:nth-child(5) {
+      break-before: always;
+      margin-left: auto;
+    }
+    
+    /* Adjust spacing for second row */
+    .time-slot:nth-child(n+5) {
+      margin-top: 0.5rem;
     }
 
     .time-slot:hover:not(:disabled) {
