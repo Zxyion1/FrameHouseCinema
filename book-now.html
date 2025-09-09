@@ -43,41 +43,46 @@
     /* Time Slots Section */
     .time-slots-section {
       background: var(--bg);
-      padding: 1.5rem;
+      padding: 1rem;
       border-radius: var(--radius);
       border: 1px solid var(--line);
-      margin-top: 2rem;
+      margin-top: 1.5rem;
       display: none; /* Hidden by default until date is selected */
+      max-width: 350px; /* Contain the width */
+      margin-left: auto;
+      margin-right: auto;
     }
 
     .time-slots-grid {
       display: grid;
-      grid-template-columns: repeat(4, 1fr); /* Fixed 4 columns */
-      gap: 0.75rem;
+      grid-template-columns: repeat(2, 1fr); /* 2 columns */
+      gap: 0.5rem; /* Reduced gap */
       margin-top: 1rem;
-      max-width: 600px; /* Limit maximum width */
+      max-width: 300px; /* Smaller max-width for 2 columns */
       margin-left: auto;
       margin-right: auto;
     }
 
     .time-slot {
-      padding: 0.75rem 0.5rem;
+      padding: 0.5rem 0.25rem; /* Smaller padding */
       background: white;
-      border: 2px solid var(--line);
-      border-radius: 25px; /* Slightly smaller radius */
+      border: 1px solid var(--line); /* Thinner border */
+      border-radius: 20px; /* Even smaller radius */
       cursor: pointer;
       transition: all 0.3s ease;
-      font-size: 0.85rem;
+      font-size: 0.8rem; /* Smaller font */
       text-align: center;
       font-weight: 500;
       color: var(--fg);
       width: 100%;
+      min-width: 90px; /* Ensure minimum width */
+      margin: 0 auto; /* Center in grid cell */
     }
 
     .time-slot:hover:not(:disabled) {
-      transform: translateY(-2px);
+      transform: translateY(-1px); /* Subtle lift */
       border-color: var(--accent);
-      box-shadow: 0 4px 12px rgba(0, 122, 255, 0.15);
+      box-shadow: 0 2px 8px rgba(0, 122, 255, 0.1);
       background: var(--card);
     }
 
@@ -85,7 +90,14 @@
       background: var(--accent);
       color: white;
       border-color: var(--accent);
-      box-shadow: 0 4px 12px rgba(0, 122, 255, 0.2);
+      box-shadow: 0 2px 8px rgba(0, 122, 255, 0.2);
+      transform: translateY(-1px);
+    }
+
+    /* Add active state for click feedback */
+    .time-slot:active:not(:disabled) {
+      transform: translateY(0);
+      box-shadow: 0 1px 4px rgba(0, 122, 255, 0.1);
     }
 
     .time-slot:disabled {
