@@ -17,27 +17,97 @@
   <script src="js/service-selection.js"></script>
 
   <style>
-    .calendar-container {
+    .date-time-container {
       background: var(--card);
       padding: 2rem;
       border-radius: var(--radius);
       margin-bottom: 2rem;
+      box-shadow: var(--shadow);
     }
-    
+
+    .calendar-group {
+      margin-bottom: 2rem;
+    }
+
     .time-slots {
-      display: none;
       margin-top: 2rem;
-    }
-    
-    .time-slot {
-      display: inline-block;
-      padding: 0.75rem 1.5rem;
-      margin: 0.5rem;
       background: var(--bg);
+      padding: 1.5rem;
+      border-radius: var(--radius);
+      border: 1px solid var(--line);
+    }
+
+    .time-slots-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .time-slot {
+      padding: 0.75rem 1rem;
+      background: white;
       border: 1px solid var(--line);
       border-radius: var(--radius);
       cursor: pointer;
       transition: all 0.2s ease;
+      font-size: 0.9rem;
+      text-align: center;
+    }
+
+    .time-slot:hover:not(:disabled) {
+      transform: translateY(-2px);
+      border-color: var(--accent);
+      box-shadow: 0 4px 12px rgba(0, 122, 255, 0.1);
+    }
+
+    .time-slot.selected {
+      background: var(--accent);
+      color: white;
+      border-color: var(--accent);
+    }
+
+    .time-slot:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      background: var(--line);
+    }
+
+    .duration-selector {
+      margin-top: 2rem;
+      padding: 1.5rem;
+      background: var(--bg);
+      border-radius: var(--radius);
+      border: 1px solid var(--line);
+    }
+
+    .duration-selector label {
+      display: block;
+      margin-bottom: 0.5rem;
+      color: var(--fg);
+      font-weight: 500;
+    }
+
+    .duration-selector select {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: white;
+      color: var(--fg);
+      font-size: 1rem;
+      cursor: pointer;
+    }
+
+    .price-display {
+      margin-top: 2rem;
+      padding: 1rem;
+      background: var(--accent);
+      color: white;
+      border-radius: var(--radius);
+      text-align: center;
+      font-size: 1.2rem;
+      font-weight: 600;
     }
     
     .time-slot:hover {
@@ -488,13 +558,17 @@
     <!-- Step 2: Date & Time -->
     <div class="booking-step" id="step2" style="display: none;">
       <h2>Select Date & Time</h2>
-      <div class="form-group">
-        <label for="booking-date">Select Date and Time</label>
-        <input type="text" id="booking-date" placeholder="Click to choose date and time">
+      <div id="date-time-container" class="date-time-container">
+        <div class="form-group calendar-group">
+          <label for="booking-date">Select Date</label>
+          <input type="text" id="booking-date" placeholder="Click to choose a date">
+        </div>
+        <!-- Time slots and duration selector will be inserted here by JavaScript -->
+        <div id="price-display" class="price-display"></div>
       </div>
       <div class="button-group">
         <button class="back-button" onclick="prevStep(2)">Back</button>
-        <button class="next-button" onclick="nextStep(3)">Next: Choose Location</button>
+        <button class="next-button" onclick="nextStep(3)" disabled>Next: Choose Location</button>
       </div>
     </div>
 
