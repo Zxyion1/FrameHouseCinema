@@ -552,7 +552,9 @@
         <label for="special-requests">Special Requests or Notes</label>
         <textarea id="special-requests" rows="4" placeholder="Tell us about any specific requirements..."></textarea>
       </div>
-      <button class="next-button" onclick="nextStep(2)">Next: Choose Date & Time</button>
+      <div class="button-group">
+        <button class="next-button" onclick="goToStep(2)">Next: Choose Date & Time</button>
+      </div>
     </div>
 
     <!-- Step 2: Date & Time -->
@@ -567,8 +569,8 @@
         <div id="price-display" class="price-display"></div>
       </div>
       <div class="button-group">
-        <button class="back-button" onclick="prevStep(2)">Back</button>
-        <button class="next-button" onclick="nextStep(3)" disabled>Next: Choose Location</button>
+        <button class="back-button" onclick="goToStep(1)">Back to Services</button>
+        <button class="next-button" onclick="goToStep(3)" disabled>Next: Choose Location</button>
       </div>
     </div>
 
@@ -612,6 +614,44 @@
     const elements = stripe.elements();
     const card = elements.create('card');
     card.mount('#card-element');
+
+    // Navigation functions
+    function goToStep(step) {
+        // Hide all steps
+        document.querySelectorAll('.booking-step').forEach(el => {
+            el.style.display = 'none';
+        });
+        
+        // Show target step
+        document.getElementById('step' + step).style.display = 'block';
+        
+        // Update progress bar
+        document.querySelectorAll('.progress-step').forEach((el, index) => {
+            if (index < step) {
+                el.classList.add('active');
+            } else {
+                el.classList.remove('active');
+            }
+        });
+
+        // If moving to step 2, initialize calendar
+        if (step === 2) {
+            const serviceType = document.getElementById('service-type').value;
+            if (serviceType) {
+                initializeCalendar();
+                createTimeSlots();
+                setupDurationSelector();
+            }
+        }
+    }
+
+    function prevStep(currentStep) {
+        goToStep(currentStep - 1);
+    }
+
+    function nextStep(nextStep) {
+        goToStep(nextStep);
+    }
   </script>
 
   <script async defer
