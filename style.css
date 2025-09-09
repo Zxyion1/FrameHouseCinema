@@ -46,8 +46,10 @@ body {
 }
 
 img {
-    background: #F5F9FC;
+  background: #F5F9FC;
   display: block;
+  max-width: 100%;
+  height: auto;
 }
 
 /* HEADER */
