@@ -198,16 +198,6 @@
 
       // Initialize first step
       document.getElementById('step1').style.display = 'block';
-
-      // Initialize flatpickr
-      flatpickr("#booking-date", {
-        enableTime: true,
-        minTime: "10:00",
-        maxTime: "20:00",
-        dateFormat: "Y-m-d H:i",
-        altInput: true,
-        altFormat: "F j, Y h:i K"
-      });
     });
   </script>
   <style>
@@ -610,17 +600,36 @@
     <!-- Step 2: Date & Time -->
     <div class="booking-step" id="step2" style="display: none;">
       <h2>Select Date & Time</h2>
-      <div id="date-time-container" class="date-time-container">
+      
+      <!-- Calendar Section -->
+      <div class="booking-section calendar-section">
+        <h3 class="section-title">Select a Date</h3>
         <div class="form-group calendar-group">
-          <label for="booking-date">Select Date</label>
           <input type="text" id="booking-date" placeholder="Click to choose a date">
         </div>
-        <!-- Time slots and duration selector will be inserted here by JavaScript -->
+      </div>
+      
+      <!-- Time Slots Section -->
+      <div id="time-slots-section" class="booking-section time-slots-section">
+        <h3 class="section-title">Select a Time</h3>
+        <div id="time-slots" class="time-slots-grid">
+          <!-- Time slots will be dynamically inserted here -->
+        </div>
+      </div>
+      
+      <!-- Duration Section -->
+      <div id="duration-section" class="booking-section">
+        <h3 class="section-title">Session Duration</h3>
+        <div id="duration-container">
+          <!-- Duration selector will be dynamically inserted here -->
+        </div>
         <div id="price-display" class="price-display"></div>
       </div>
+      
       <div class="button-group">
         <button class="back-button" onclick="goToStep(1)">Back to Services</button>
-        <button class="next-button" onclick="goToStep(3)" disabled>Next: Choose Location</button>
+        <button id="confirm-datetime-btn" class="confirm-button" disabled>Confirm Selection</button>
+        <button class="next-button" onclick="goToStep(3)" style="display: none;">Next: Choose Location</button>
       </div>
     </div>
 
@@ -684,19 +693,127 @@
             }
         });
 
-        // If moving to step 2, initialize calendar
+        // If moving to step 2, initialize booking components
         if (step === 2) {
             const serviceType = document.getElementById('service-type').value;
             if (serviceType) {
-                initializeCalendar();
-                createTimeSlots();
-                setupDurationSelector();
+                // Initialize calendar with flatpickr
+                flatpickr("#booking-date", {
+                    enableTime: false,
+                    dateFormat: "Y-m-d",
+                    minDate: "today",
+                    disable: [
+                        function(date) {
+                            // Disable Sundays
+                            return date.getDay() === 0;
+                        }
+                    ],
+                    onChange: function(selectedDates) {
+                        const date = selectedDates[0];
+                        if (date) {
+                            document.getElementById('time-slots-section').style.display = 'block';
+                            // Reset any previously selected time
+                            document.querySelectorAll('.time-slot.selected').forEach(slot => {
+                                slot.classList.remove('selected');
+                            });
+                            updateConfirmButton();
+                        }
+                    }
+                });
+                
+                // Create time slots
+                const timeSlots = [
+                    "10:00 AM", "11:00 AM", "12:00 PM",
+                    "1:00 PM", "2:00 PM", "3:00 PM",
+                    "4:00 PM", "5:00 PM", "6:00 PM",
+                    "7:00 PM", "8:00 PM"
+                ];
+
+                const timeSlotsContainer = document.getElementById('time-slots');
+                if (timeSlotsContainer) {
+                    // Clear existing slots
+                    timeSlotsContainer.innerHTML = '';
+                    
+                    timeSlots.forEach(time => {
+                        const slot = document.createElement('button');
+                        slot.className = 'time-slot';
+                        slot.textContent = time;
+                        slot.onclick = function() {
+                            // Remove selection from all slots
+                            document.querySelectorAll('.time-slot').forEach(s => {
+                                s.classList.remove('selected');
+                            });
+                            // Add selection to clicked slot
+                            this.classList.add('selected');
+                            updateConfirmButton();
+                        };
+                        timeSlotsContainer.appendChild(slot);
+                    });
+                }
+                
+                // Set up duration selector
+                const durationContainer = document.getElementById('duration-container');
+                if (durationContainer) {
+                    durationContainer.innerHTML = `
+                        <select id="duration-select" class="duration-selector" onchange="updateBookingPrice()">
+                            <option value="1">1 Hour</option>
+                            <option value="2">2 Hours</option>
+                            <option value="4">4 Hours</option>
+                            <option value="6">6 Hours</option>
+                            <option value="8">8 Hours</option>
+                        </select>
+                    `;
+                }
             }
         }
     }
 
     function prevStep(currentStep) {
         goToStep(currentStep - 1);
+    }
+
+    function updateConfirmButton() {
+        const confirmBtn = document.getElementById('confirm-datetime-btn');
+        const nextBtn = document.querySelector('#step2 .next-button');
+        if (confirmBtn && nextBtn) {
+            const hasDate = document.querySelector('.flatpickr-input').value !== '';
+            const hasTime = document.querySelector('.time-slot.selected') !== null;
+            confirmBtn.disabled = !(hasDate && hasTime);
+            
+            // When enabled, add event listener to confirmation button
+            if (!confirmBtn.disabled && !confirmBtn.hasListener) {
+                confirmBtn.addEventListener('click', function() {
+                    // Store the selected date and time
+                    const date = document.querySelector('.flatpickr-input').value;
+                    const time = document.querySelector('.time-slot.selected').textContent;
+                    const duration = document.getElementById('duration-select').value;
+                    
+                    // Store the booking details
+                    sessionStorage.setItem('bookingDetails', JSON.stringify({
+                        date: date,
+                        time: time,
+                        duration: duration
+                    }));
+                    
+                    // Hide confirm button, show and enable next button
+                    confirmBtn.style.display = 'none';
+                    nextBtn.style.display = 'block';
+                    nextBtn.disabled = false;
+                });
+                confirmBtn.hasListener = true;
+            }
+        }
+    }
+
+    function updateBookingPrice() {
+        const duration = parseInt(document.getElementById('duration-select').value);
+        const basePrice = 150; // Base price per hour
+        const totalPrice = basePrice * duration;
+        
+        const priceDisplay = document.getElementById('price-display');
+        if (priceDisplay) {
+            priceDisplay.textContent = `Estimated Price: $${totalPrice}`;
+        }
     }
 
     function nextStep(nextStep) {
