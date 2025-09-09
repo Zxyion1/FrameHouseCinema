@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Complete Your Booking - FrameHouseCinema</title>
+  <meta name="description" content="Complete your booking with FrameHouseCinema">
+  <link rel="stylesheet" href="style.css">
+  <link rel="styleshe  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Initialize stripe
+      const stripe = Stripe('your_publishable_key'); // You'll need to replace this with your actual Stripe key
+      const elements = stripe.elements();
+      const card = elements.create('card');
+      card.mount('#card-element');
+
+      // Initialize first step
+      document.getElementById('step1').style.display = 'block';
+
+      // Get the service type from URL parameters
+      const urlParams = new URLSearchParams(window.location.search);
+      const serviceType = urlParams.get('service');
+      document.getElementById('service-type').value = serviceType;
+    });
+
+    async function submitBooking() {
+      // Here you would:
+      // 1. Validate all inputs
+      // 2. Process payment through Stripe
+      // 3. Save booking to your database
+      // 4. Show confirmation
+      alert('Booking submitted successfully!'); // Replace with actual implementation
+    }
+  </script>dn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  <script src="https://js.stripe.com/v3/"></script>
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA-test-key-for-development&libraries=places&callback=initMap" async defer></script>
+  <script src="js/navigation.js"></script>
+  <script src="js/booking.js"></script>
+  <script src="js/service-selection.js"></script>
+  <style>
+    .change-service-btn {
+      display: inline-block;
+      padding: clamp(0.4rem, 2vw, 0.5rem) clamp(0.75rem, 3vw, 1rem);
+      margin-top: 0.5rem;
+      margin-right: 0.5rem;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: var(--radius);
+      cursor: pointer;
+      font-size: clamp(0.85rem, 2.2vw, 0.9rem);
+      transition: all 0.2s ease;
+      -webkit-tap-highlight-color: transparent;
+      white-space: nowrap;
+    }
+    
+    .change-service-btn:hover,
+    .change-service-btn:active {
+      background: #0066cc;
+      transform: translateY(-1px);
+    }
+
+    @media (hover: none) {
+      .change-service-btn:active {
+        transform: scale(0.95);
+      }
+    }
+
+    .change-service-btn.confirm-service {
+      background: #16a34a;
+    }
+
+    .change-service-btn.confirm-service:hover,
+    .change-service-btn.confirm-service:active {
+      background: #15803d;
+    }
+
+    .change-service-btn.cancel-service {
+      background: #dc2626;
+    }
+
+    .change-service-btn.cancel-service:hover,
+    .change-service-btn.cancel-service:active {
+      background: #b91c1c;
+    }
+
+    /* Mobile Form Fixes */
+    @media (max-width: 480px) {
+      #card-element {
+        padding: 12px;
+        font-size: 16px; /* Prevents iOS zoom */
+      }
+
+      input[type="email"],
+      input[type="tel"],
+      input[type="text"],
+      textarea {
+        font-size: 16px; /* Prevents iOS zoom */
+      }
+    }
+
+    .service-selection-container {
+      position: relative;
+      margin-bottom: 1rem;
+    }
+
+    .selected-service {
+      background: var(--card);
+      padding: 1rem;
+      border-radius: var(--radius);
+      margin-bottom: 1rem;
+      border: 1px solid var(--line);
+    }
+
+    .service-menu {
+      background: var(--bg);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: clamp(0.75rem, 3vw, 1rem);
+      margin-top: 1rem;
+      box-shadow: var(--shadow);
+    }
+
+    .service-menu h3 {
+      color: var(--accent);
+      margin: clamp(0.75rem, 3vw, 1rem) 0;
+      font-size: clamp(1.1rem, 3vw, 1.2rem);
+    }
+
+    .service-option {
+      background: var(--card);
+      padding: clamp(0.75rem, 3vw, 1rem);
+      margin: 0.5rem 0;
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border: 1px solid var(--line);
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .service-option:hover,
+    .service-option:active {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    @media (hover: none) {
+      .service-option:active {
+        transform: scale(0.98);
+      }
+    }
+
+    .service-option.selected {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px rgba(0, 122, 255, 0.1);
+    }
+
+    .service-name {
+      font-weight: 600;
+      color: var(--fg);
+      margin-bottom: 0.25rem;
+      font-size: clamp(0.9rem, 2.5vw, 1rem);
+    }
+
+    .service-price {
+      color: var(--accent);
+      font-weight: 600;
+      font-size: clamp(1.1rem, 3vw, 1.2rem);
+    }
+
+    .service-note {
+      color: var(--muted);
+      font-size: clamp(0.8rem, 2vw, 0.9rem);
+      margin-top: 0.25rem;
+    }
+
+    /* Mobile Responsive Progress Bar */
+    .progress-bar {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+
+    .progress-bar::-webkit-scrollbar {
+      display: none;
+    }
+
+    @media (max-width: 480px) {
+      .progress-step {
+        font-size: 0.85rem;
+        padding: 0.75rem 0.5rem;
+      }
+    }
+
+    select:disabled {
+      background: var(--line);
+      opacity: 0.8;
+    }
+    .booking-container {
+      max-width: min(100% - 2rem, 800px);
+      margin: clamp(1rem, 4vw, 2rem) auto;
+      padding: clamp(1rem, 4vw, 2rem);
+    }
+
+    .booking-step {
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: clamp(1rem, 4vw, 2rem);
+      margin-bottom: clamp(1rem, 4vw, 2rem);
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+    }
+
+    .booking-step h2 {
+      color: var(--fg);
+      margin-bottom: 1.5rem;
+      font-size: clamp(1.2rem, 3vw, 1.5rem);
+    }
+
+    .form-group {
+      margin-bottom: clamp(1rem, 3vw, 1.5rem);
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 0.5rem;
+      color: var(--fg);
+      font-weight: 500;
+      font-size: clamp(0.9rem, 2.5vw, 1rem);
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width: 100%;
+      padding: clamp(0.5rem, 2vw, 0.75rem);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--bg);
+      color: var(--fg);
+      font-size: clamp(0.9rem, 2.5vw, 1rem);
+    }
+
+    .time-slots {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 120px), 1fr));
+      gap: clamp(0.5rem, 2vw, 1rem);
+      margin-top: 1rem;
+    }
+
+    .time-slot {
+      padding: clamp(0.5rem, 2vw, 0.75rem);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      text-align: center;
+      font-size: clamp(0.9rem, 2.5vw, 1rem);
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .time-slot:hover:not(.disabled) {
+      border-color: var(--accent);
+      background: var(--card);
+    }
+
+    .time-slot.selected {
+      background: var(--accent);
+      color: white;
+      border-color: var(--accent);
+    }
+
+    .time-slot.disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      background: var(--line);
+    }
+
+    .progress-bar {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 2rem;
+      position: relative;
+    }
+
+    .progress-step {
+      flex: 1;
+      text-align: center;
+      padding: 1rem;
+      position: relative;
+      color: var(--muted);
+    }
+
+    .progress-step.active {
+      color: var(--accent);
+      font-weight: bold;
+    }
+
+    .progress-step::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 3px;
+      background: var(--line);
+    }
+
+    .progress-step.active::after {
+      background: var(--accent);
+    }
+
+    #map {
+      height: 300px;
+      margin: 1rem 0;
+      border-radius: var(--radius);
+    }
+
+    .error-message {
+      color: #dc2626;
+      font-size: 0.875rem;
+      margin-top: 0.5rem;
+    }
+
+    .next-button {
+      background: var(--accent);
+      color: white;
+      padding: 1rem 2rem;
+      border: none;
+      border-radius: var(--radius);
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .next-button:hover {
+      opacity: 0.9;
+    }
+
+    .next-button:disabled {
+      background: var(--line);
+      cursor: not-allowed;
+    }
+  </style>
+</head>
+<body>
+  <!-- HEADER -->
+  <header class="site-header">
+    <div class="brand" style="display:flex;align-items:center;gap:1rem;">
+      <a href="index.html" style="display:flex;align-items:center;gap:1rem;text-decoration:none;color:inherit;">
+        <img class="brand-logo" src="../Media/logo/FrameHouseCinema Concept Logo 3.jpg" alt="FrameHouseCinema logo" />
+        <span class="brand-name">FrameHouseCinema</span>
+      </a>
+    </div>
+    <nav class="top-nav">
+      <a href="index.html">Home</a>
+      <a href="booking.html">Services</a>
+    </nav>
+  </header>
+
+  <div class="booking-container">
+    <div class="progress-bar">
+      <div class="progress-step active">1. Service Details</div>
+      <div class="progress-step">2. Date & Time</div>
+      <div class="progress-step">3. Location</div>
+      <div class="progress-step">4. Payment</div>
+    </div>
+
+    <!-- Step 1: Service Details -->
+    <div class="booking-step" id="step1" style="display: block;">
+      <h2>Service Details</h2>
+      <div class="form-group">
+        <label for="service-type">Selected Service</label>
+        <input type="text" id="service-type" readonly>
+      </div>
+      <div class="form-group">
+        <label for="special-requests">Special Requests or Notes</label>
+        <textarea id="special-requests" rows="4" placeholder="Tell us about any specific requirements..."></textarea>
+      </div>
+      <button class="next-button" onclick="nextStep(2)">Next: Choose Date & Time</button>
+    </div>
+
+    <!-- Step 2: Date & Time -->
+    <div class="booking-step" id="step2" style="display: none;">
+      <h2>Select Date & Time</h2>
+      <div class="form-group">
+        <label for="booking-date">Select Date</label>
+        <input type="text" id="booking-date" placeholder="Choose your date">
+      </div>
+      <div class="form-group">
+        <label>Available Time Slots</label>
+        <div class="time-slots" id="time-slots">
+          <!-- Time slots will be generated here -->
+        </div>
+      </div>
+      <button class="next-button" onclick="nextStep(3)">Next: Choose Location</button>
+    </div>
+
+    <!-- Step 3: Location -->
+    <div class="booking-step" id="step3" style="display: none;">
+      <h2>Location Details</h2>
+      <div class="form-group">
+        <label for="location">Event Location</label>
+        <input type="text" id="location" placeholder="Enter the address">
+      </div>
+      <div id="map"></div>
+      <div id="distance-message"></div>
+      <button class="next-button" onclick="nextStep(4)">Next: Payment</button>
+    </div>
+
+    <!-- Step 4: Payment -->
+    <div class="booking-step" id="step4" style="display: none;">
+      <h2>Complete Booking</h2>
+      <div class="form-group">
+        <label for="name">Full Name</label>
+        <input type="text" id="name" required>
+      </div>
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input type="email" id="email" required>
+      </div>
+      <div class="form-group">
+        <label for="phone">Phone Number</label>
+        <input type="tel" id="phone" required>
+      </div>
+      <div id="card-element">
+        <!-- Stripe Card Element will be inserted here -->
+      </div>
+      <div id="card-errors" class="error-message"></div>
+      <button class="next-button" onclick="submitBooking()">Complete Booking</button>
+    </div>
+  </div>
+
+  <script>
+    let selectedTimeSlot = null;
+    const stripe = Stripe('your_publishable_key'); // You'll need to replace this with your actual Stripe key
+    const elements = stripe.elements();
+    const card = elements.create('card');
+    card.mount('#card-element');
+
+    // Initialize flatpickr date picker
+    flatpickr("#booking-date", {
+      minTime: "10:00",
+      maxTime: "20:00",
+
+  </script>
+
+  <script async defer
+    src="https://maps.googleapis.com/maps/api/js?key=YOUR_GOOGLE_MAPS_API_KEY&callback=initMap">
+  </script>
+</body>
+</html>

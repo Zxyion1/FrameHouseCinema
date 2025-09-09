@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Complete Your Booking - FrameHouseCinema</title>
+  <meta name="description" content="Complete your booking with FrameHouseCinema">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  <script src="https://js.stripe.com/v3/"></script>
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA-test-key-for-development&libraries=places&callback=initMap" async defer></script>
+  <style>
+    .booking-container {
+      max-width: 800px;
+      margin: 2rem auto;
+      padding: 2rem;
+    }
+
+    .booking-step {
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 2rem;
+      margin-bottom: 2rem;
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+    }
+
+    .booking-step h2 {
+      color: var(--fg);
+      margin-bottom: 1.5rem;
+    }
+
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 0.5rem;
+      color: var(--fg);
+      font-weight: 500;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--bg);
+      color: var(--fg);
+      font-size: 1rem;
+    }
+
+    .time-slots {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .time-slot {
+      padding: 0.75rem;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .time-slot:hover:not(.disabled) {
+      border-color: var(--accent);
+      background: var(--card);
+    }
+
+    .time-slot.selected {
+      background: var(--accent);
+      color: white;
+      border-color: var(--accent);
+    }
+
+    .time-slot.disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      background: var(--line);
+    }
+
+    .progress-bar {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 2rem;
+      position: relative;
+    }
+
+    .progress-step {
+      flex: 1;
+      text-align: center;
+      padding: 1rem;
+      position: relative;
+      color: var(--muted);
+    }
+
+    .progress-step.active {
+      color: var(--accent);
+      font-weight: bold;
+    }
+
+    .progress-step::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 3px;
+      background: var(--line);
+    }
+
+    .progress-step.active::after {
+      background: var(--accent);
+    }
+
+    #map {
+      height: 300px;
+      margin: 1rem 0;
+      border-radius: var(--radius);
+    }
+
+    .error-message {
+      color: #dc2626;
+      font-size: 0.875rem;
+      margin-top: 0.5rem;
+    }
+
+    .next-button {
+      background: var(--accent);
+      color: white;
+      padding: 1rem 2rem;
+      border: none;
+      border-radius: var(--radius);
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .next-button:hover {
+      opacity: 0.9;
+    }
+
+    .next-button:disabled {
+      background: var(--line);
+      cursor: not-allowed;
+    }
+  </style>
+</head>
+<body>
+  <!-- HEADER -->
+  <header class="site-header">
+    <div class="brand" style="display:flex;align-items:center;gap:1rem;">
+      <img class="brand-logo" src="../Media/logo/FrameHouseCinema Concept Logo 3.jpg" alt="FrameHouseCinema logo" />
+      <span class="brand-name">FrameHouseCinema</span>
+    </div>
+    <nav class="top-nav">
+      <a href="index.html">Home</a>
+      <a href="booking.html">Services</a>
+    </nav>
+  </header>
+
+  <div class="booking-container">
+    <div class="progress-bar">
+      <div class="progress-step active">1. Service Details</div>
+      <div class="progress-step">2. Date & Time</div>
+      <div class="progress-step">3. Location</div>
+      <div class="progress-step">4. Payment</div>
+    </div>
+
+    <!-- Step 1: Service Details -->
+    <div class="booking-step" id="step1">
+      <h2>Service Details</h2>
+      <div class="form-group">
+        <label for="service-type">Selected Service</label>
+        <input type="text" id="service-type" readonly>
+      </div>
+      <div class="form-group">
+        <label for="special-requests">Special Requests or Notes</label>
+        <textarea id="special-requests" rows="4" placeholder="Tell us about any specific requirements..."></textarea>
+      </div>
+      <button class="next-button" onclick="nextStep(2)">Next: Choose Date & Time</button>
+    </div>
+
+    <!-- Step 2: Date & Time -->
+    <div class="booking-step" id="step2" style="display: none;">
+      <h2>Select Date & Time</h2>
+      <div class="form-group">
+        <label for="booking-date">Select Date</label>
+        <input type="text" id="booking-date" placeholder="Choose your date">
+      </div>
+      <div class="form-group">
+        <label>Available Time Slots</label>
+        <div class="time-slots" id="time-slots">
+          <!-- Time slots will be generated here -->
+        </div>
+      </div>
+      <button class="next-button" onclick="nextStep(3)">Next: Choose Location</button>
+    </div>
+
+    <!-- Step 3: Location -->
+    <div class="booking-step" id="step3" style="display: none;">
+      <h2>Location Details</h2>
+      <div class="form-group">
+        <label for="location">Event Location</label>
+        <input type="text" id="location" placeholder="Enter the address">
+      </div>
+      <div id="map"></div>
+      <div id="distance-message"></div>
+      <button class="next-button" onclick="nextStep(4)">Next: Payment</button>
+    </div>
+
+    <!-- Step 4: Payment -->
+    <div class="booking-step" id="step4" style="display: none;">
+      <h2>Complete Booking</h2>
+      <div class="form-group">
+        <label for="name">Full Name</label>
+        <input type="text" id="name" required>
+      </div>
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input type="email" id="email" required>
+      </div>
+      <div class="form-group">
+        <label for="phone">Phone Number</label>
+        <input type="tel" id="phone" required>
+      </div>
+      <div id="card-element">
+        <!-- Stripe Card Element will be inserted here -->
+      </div>
+      <div id="card-errors" class="error-message"></div>
+      <button class="next-button" onclick="submitBooking()">Complete Booking</button>
+    </div>
+  </div>
+
+  <script>
+    let selectedTimeSlot = null;
+    const stripe = Stripe('your_publishable_key'); // You'll need to replace this with your actual Stripe key
+    const elements = stripe.elements();
+    const card = elements.create('card');
+    card.mount('#card-element');
+
+    // Initialize flatpickr date picker
+    flatpickr("#booking-date", {
+      minTime: "10:00",
+      maxTime: "20:00",
+      minDate: "today",
+      disable: [], // This will be populated with booked dates
+      onChange: function(selectedDates, dateStr) {
+        generateTimeSlots(dateStr);
+      }
+    });
+
+    // Generate available time slots
+    function generateTimeSlots(date) {
+      const timeSlots = document.getElementById('time-slots');
+      timeSlots.innerHTML = '';
+      
+      // Generate slots between 10 AM and 8 PM
+      for (let hour = 10; hour <= 20; hour++) {
+        const timeSlot = document.createElement('div');
+        timeSlot.className = 'time-slot';
+        timeSlot.textContent = `${hour}:00`;
+        
+        // Check if this slot is available
+        if (!isSlotAvailable(date, hour)) {
+          timeSlot.className += ' disabled';
+        } else {
+          timeSlot.onclick = () => selectTimeSlot(timeSlot, `${hour}:00`);
+        }
+        
+        timeSlots.appendChild(timeSlot);
+      }
+    }
+
+    function selectTimeSlot(element, time) {
+      // Remove selection from other slots
+      document.querySelectorAll('.time-slot').forEach(slot => {
+        slot.classList.remove('selected');
+      });
+      
+      element.classList.add('selected');
+      selectedTimeSlot = time;
+    }
+
+    function isSlotAvailable(date, hour) {
+      // This would check against your booking database
+      return true; // For now, all slots are available
+    }
+
+    function nextStep(step) {
+      // Hide all steps
+      document.querySelectorAll('.booking-step').forEach(el => {
+        el.style.display = 'none';
+      });
+      
+      // Show selected step
+      document.getElementById(`step${step}`).style.display = 'block';
+      
+      // Update progress bar
+      document.querySelectorAll('.progress-step').forEach((el, index) => {
+        if (index < step) {
+          el.classList.add('active');
+        } else {
+          el.classList.remove('active');
+        }
+      });
+    }
+
+    async function submitBooking() {
+      // Here you would:
+      // 1. Validate all inputs
+      // 2. Process payment through Stripe
+      // 3. Save booking to your database
+      // 4. Show confirmation
+      alert('Booking submitted successfully!'); // Replace with actual implementation
+    }
+
+    // Get the service type from URL parameters
+    window.onload = function() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const serviceType = urlParams.get('service');
+      document.getElementById('service-type').value = serviceType;
+    }
+  </script>
+
+  <script async defer
+    src="https://maps.googleapis.com/maps/api/js?key=YOUR_GOOGLE_MAPS_API_KEY&callback=initMap">
+  </script>
+</body>
+</html>
