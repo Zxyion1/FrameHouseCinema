@@ -178,6 +178,70 @@ function enableNextIfReady() {
     }
 }
 
+function setupConfirmationButton() {
+    const confirmBtn = document.getElementById('confirm-datetime-btn');
+    if (confirmBtn) {
+        confirmBtn.onclick = function() {
+            if (validateBooking()) {
+                // Store booking details
+                const bookingDetails = {
+                    date: bookingState.selectedDate,
+                    time: bookingState.selectedTime,
+                    duration: bookingState.duration,
+                    estimatedPrice: calculatePrice()
+                };
+                
+                // Store in session storage for the next step
+                sessionStorage.setItem('bookingDetails', JSON.stringify(bookingDetails));
+                
+                // Enable and trigger next step button
+                const nextButton = document.querySelector('#step2 .next-button');
+                if (nextButton) {
+                    nextButton.disabled = false;
+                    nextButton.click();
+                }
+            }
+        };
+    }
+}
+
+function updateConfirmButtonState() {
+    const confirmBtn = document.getElementById('confirm-datetime-btn');
+    if (confirmBtn) {
+        confirmBtn.disabled = !(bookingState.selectedDate && 
+                              bookingState.selectedTime && 
+                              bookingState.duration);
+        
+        if (!confirmBtn.disabled) {
+            confirmBtn.classList.add('active');
+        } else {
+            confirmBtn.classList.remove('active');
+        }
+    }
+}
+
+function validateBooking() {
+    if (!bookingState.selectedDate) {
+        alert('Please select a date');
+        return false;
+    }
+    if (!bookingState.selectedTime) {
+        alert('Please select a time slot');
+        return false;
+    }
+    if (!bookingState.duration) {
+        alert('Please select a duration');
+        return false;
+    }
+    return true;
+}
+
+function calculatePrice() {
+    const basePrice = bookingState.basePrice;
+    const multiplier = durationMultipliers[bookingState.duration];
+    return basePrice * multiplier;
+}
+
 // Function to check time slot availability (to be connected to backend)
 function isTimeSlotAvailable(date, time) {
     // This would typically check against a backend database
