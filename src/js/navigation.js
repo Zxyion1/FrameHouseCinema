@@ -21,16 +21,7 @@ function validateStep(step) {
             return true;
 
         case 2:
-            // Date and time validation
-            const selectedDate = document.querySelector('.flatpickr-input').value;
-            if (!selectedDate) {
-                alert('Please select a date to continue.');
-                return false;
-            }
-            if (!selectedTimeSlot) {
-                alert('Please select a time slot to continue.');
-                return false;
-            }
+            // No validation needed for step 2 - date and time are selected on this step
             return true;
 
         case 3:
@@ -60,42 +51,36 @@ function validateStep(step) {
 }
 
 // Handle step navigation
+function goToStep(stepNumber) {
+    // Hide all steps first
+    const allSteps = document.querySelectorAll('.booking-step');
+    allSteps.forEach(step => {
+        step.classList.remove('active');
+        step.style.display = 'none';
+    });
+
+    // Show the requested step
+    const targetStep = document.getElementById(`step${stepNumber}`);
+    if (targetStep) {
+        targetStep.classList.add('active');
+        targetStep.style.display = 'block';
+        window.scrollTo(0, targetStep.offsetTop - 20);
+        
+        // Update progress bar
+        document.querySelectorAll('.progress-step').forEach(step => step.classList.remove('active'));
+        document.querySelector(`.progress-step:nth-child(${stepNumber})`).classList.add('active');
+    }
+}
+
 function nextStep(currentStep) {
     if (!validateStep(currentStep)) {
         return;
     }
-    
-    const currentStepElement = document.getElementById(`step${currentStep}`);
-    const nextStepElement = document.getElementById(`step${currentStep + 1}`);
-    
-    if (currentStepElement && nextStepElement) {
-        currentStepElement.classList.remove('active');
-        currentStepElement.style.display = 'none';
-        nextStepElement.classList.add('active');
-        nextStepElement.style.display = 'block';
-        window.scrollTo(0, nextStepElement.offsetTop - 20);
-        
-        // Update progress bar
-        document.querySelector(`.progress-step:nth-child(${currentStep})`).classList.remove('active');
-        document.querySelector(`.progress-step:nth-child(${currentStep + 1})`).classList.add('active');
-    }
+    goToStep(currentStep + 1);
 }
 
 function prevStep(currentStep) {
-    const currentStepElement = document.getElementById(`step${currentStep}`);
-    const prevStepElement = document.getElementById(`step${currentStep - 1}`);
-    
-    if (currentStepElement && prevStepElement) {
-        currentStepElement.classList.remove('active');
-        currentStepElement.style.display = 'none';
-        prevStepElement.classList.add('active');
-        prevStepElement.style.display = 'block';
-        window.scrollTo(0, prevStepElement.offsetTop - 20);
-
-        // Update progress bar
-        document.querySelector(`.progress-step:nth-child(${currentStep})`).classList.remove('active');
-        document.querySelector(`.progress-step:nth-child(${currentStep - 1})`).classList.add('active');
-    }
+    goToStep(currentStep - 1);
 }
 
 // Add this to your existing booking.js

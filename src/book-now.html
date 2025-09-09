@@ -6,10 +6,20 @@
   <title>Complete Your Booking - FrameHouseCinema</title>
   <meta name="description" content="Complete your booking with FrameHouseCinema">
   <link rel="stylesheet" href="style.css">
-  <link rel="styleshe  <script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+
+  <!-- JavaScript Dependencies -->
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  <script src="https://js.stripe.com/v3/"></script>
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA-test-key-for-development&libraries=places&callback=initMap" async defer></script>
+  <script src="js/navigation.js"></script>
+  <script src="js/booking.js"></script>
+  <script src="js/service-selection.js"></script>
+
+  <script>
     document.addEventListener('DOMContentLoaded', function() {
       // Initialize stripe
-      const stripe = Stripe('your_publishable_key'); // You'll need to replace this with your actual Stripe key
+      const stripe = Stripe('your_publishable_key');
       const elements = stripe.elements();
       const card = elements.create('card');
       card.mount('#card-element');
@@ -17,27 +27,17 @@
       // Initialize first step
       document.getElementById('step1').style.display = 'block';
 
-      // Get the service type from URL parameters
-      const urlParams = new URLSearchParams(window.location.search);
-      const serviceType = urlParams.get('service');
-      document.getElementById('service-type').value = serviceType;
+      // Initialize flatpickr
+      flatpickr("#booking-date", {
+        enableTime: true,
+        minTime: "10:00",
+        maxTime: "20:00",
+        dateFormat: "Y-m-d H:i",
+        altInput: true,
+        altFormat: "F j, Y h:i K"
+      });
     });
-
-    async function submitBooking() {
-      // Here you would:
-      // 1. Validate all inputs
-      // 2. Process payment through Stripe
-      // 3. Save booking to your database
-      // 4. Show confirmation
-      alert('Booking submitted successfully!'); // Replace with actual implementation
-    }
-  </script>dn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-  <script src="https://js.stripe.com/v3/"></script>
-  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA-test-key-for-development&libraries=places&callback=initMap" async defer></script>
-  <script src="js/navigation.js"></script>
-  <script src="js/booking.js"></script>
-  <script src="js/service-selection.js"></script>
+  </script>
   <style>
     .change-service-btn {
       display: inline-block;
@@ -98,6 +98,42 @@
       textarea {
         font-size: 16px; /* Prevents iOS zoom */
       }
+    }
+
+    .button-group {
+      display: flex;
+      gap: 1rem;
+      margin-top: 2rem;
+    }
+
+    .back-button {
+      flex: 0 0 auto;
+      padding: 0.75rem 1.5rem;
+      background: var(--bg);
+      border: 1px solid var(--line);
+      color: var(--text);
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .back-button:hover {
+      background: var(--card);
+    }
+
+    .next-button {
+      flex: 1;
+      padding: 0.75rem 1.5rem;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .next-button:hover {
+      background: var(--accent-dark);
     }
 
     .service-selection-container {
@@ -386,16 +422,13 @@
     <div class="booking-step" id="step2" style="display: none;">
       <h2>Select Date & Time</h2>
       <div class="form-group">
-        <label for="booking-date">Select Date</label>
-        <input type="text" id="booking-date" placeholder="Choose your date">
+        <label for="booking-date">Select Date and Time</label>
+        <input type="text" id="booking-date" placeholder="Click to choose date and time">
       </div>
-      <div class="form-group">
-        <label>Available Time Slots</label>
-        <div class="time-slots" id="time-slots">
-          <!-- Time slots will be generated here -->
-        </div>
+      <div class="button-group">
+        <button class="back-button" onclick="prevStep(2)">Back</button>
+        <button class="next-button" onclick="nextStep(3)">Next: Choose Location</button>
       </div>
-      <button class="next-button" onclick="nextStep(3)">Next: Choose Location</button>
     </div>
 
     <!-- Step 3: Location -->
@@ -434,17 +467,10 @@
   </div>
 
   <script>
-    let selectedTimeSlot = null;
     const stripe = Stripe('your_publishable_key'); // You'll need to replace this with your actual Stripe key
     const elements = stripe.elements();
     const card = elements.create('card');
     card.mount('#card-element');
-
-    // Initialize flatpickr date picker
-    flatpickr("#booking-date", {
-      minTime: "10:00",
-      maxTime: "20:00",
-
   </script>
 
   <script async defer
