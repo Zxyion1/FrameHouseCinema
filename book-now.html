@@ -257,6 +257,18 @@
       transform: none !important;
       box-shadow: none !important;
     }
+
+    /* Animation Styles */
+    .animate-fade-up {
+      opacity: 0;
+      transform: translateY(10px);
+      transition: opacity 0.4s ease, transform 0.4s ease;
+    }
+
+    .animate-fade-up.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
   </style>
   
   <script>
@@ -640,6 +652,413 @@
       background: var(--line);
       cursor: not-allowed;
     }
+
+    /* Animation Styles */
+    .animate-fade-up {
+      opacity: 0;
+      transform: translateY(10px);
+      transition: opacity 0.4s ease, transform 0.4s ease;
+    }
+
+    .animate-fade-up.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  </style>
+  
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Initialize stripe
+      const stripe = Stripe('your_publishable_key');
+      const elements = stripe.elements();
+      const card = elements.create('card');
+      card.mount('#card-element');
+
+      // Initialize first step
+      document.getElementById('step1').style.display = 'block';
+    });
+  </script>
+  <style>
+    .change-service-btn {
+      display: inline-block;
+      padding: clamp(0.4rem, 2vw, 0.5rem) clamp(0.75rem, 3vw, 1rem);
+      margin-top: 0.5rem;
+      margin-right: 0.5rem;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: var(--radius);
+      cursor: pointer;
+      font-size: clamp(0.85rem, 2.2vw, 0.9rem);
+      transition: all 0.2s ease;
+      -webkit-tap-highlight-color: transparent;
+      white-space: nowrap;
+    }
+    
+    .change-service-btn:hover,
+    .change-service-btn:active {
+      background: #0066cc;
+      transform: translateY(-1px);
+    }
+
+    @media (hover: none) {
+      .change-service-btn:active {
+        transform: scale(0.95);
+      }
+    }
+
+    .change-service-btn.confirm-service {
+      background: #16a34a;
+    }
+
+    .change-service-btn.confirm-service:hover,
+    .change-service-btn.confirm-service:active {
+      background: #15803d;
+    }
+
+    .change-service-btn.cancel-service {
+      background: #dc2626;
+    }
+
+    .change-service-btn.cancel-service:hover,
+    .change-service-btn.cancel-service:active {
+      background: #b91c1c;
+    }
+
+    /* Mobile Form Fixes */
+    @media (max-width: 480px) {
+      #card-element {
+        padding: 12px;
+        font-size: 16px; /* Prevents iOS zoom */
+      }
+
+      input[type="email"],
+      input[type="tel"],
+      input[type="text"],
+      textarea {
+        font-size: 16px; /* Prevents iOS zoom */
+      }
+    }
+
+    .button-group {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.75rem;
+      margin-top: 1.5rem;
+      max-width: 500px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .back-button {
+      flex: 0 0 auto;
+      padding: 0.6rem 1.2rem;
+      background: var(--bg);
+      border: 1px solid var(--line);
+      color: var(--fg);
+      border-radius: 15px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
+
+    .back-button:hover {
+      background: var(--card);
+      transform: translateY(-1px);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+
+    .next-button {
+      flex: 0 1 auto;
+      min-width: 120px;
+      padding: 0.6rem 1.2rem;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 15px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-size: 0.9rem;
+      font-weight: 500;
+      text-align: center;
+    }
+
+    .next-button:hover {
+      background: var(--accent-dark);
+    }
+
+    .service-selection-container {
+      position: relative;
+      margin-bottom: 1rem;
+    }
+
+    .selected-service {
+      background: var(--card);
+      padding: 1rem;
+      border-radius: var(--radius);
+      margin-bottom: 1rem;
+      border: 1px solid var(--line);
+    }
+
+    .service-menu {
+      background: var(--bg);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: clamp(0.75rem, 3vw, 1rem);
+      margin-top: 1rem;
+      box-shadow: var(--shadow);
+    }
+
+    .service-menu h3 {
+      color: var(--accent);
+      margin: clamp(0.75rem, 3vw, 1rem) 0;
+      font-size: clamp(1.1rem, 3vw, 1.2rem);
+    }
+
+    .service-option {
+      background: var(--card);
+      padding: clamp(0.75rem, 3vw, 1rem);
+      margin: 0.5rem 0;
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border: 1px solid var(--line);
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .service-option:hover,
+    .service-option:active {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    @media (hover: none) {
+      .service-option:active {
+        transform: scale(0.98);
+      }
+    }
+
+    .service-option.selected {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px rgba(0, 122, 255, 0.1);
+    }
+
+    .service-name {
+      font-weight: 600;
+      color: var(--fg);
+      margin-bottom: 0.25rem;
+      font-size: clamp(0.9rem, 2.5vw, 1rem);
+    }
+
+    .service-price {
+      color: var(--accent);
+      font-weight: 600;
+      font-size: clamp(1.1rem, 3vw, 1.2rem);
+    }
+
+    .service-note {
+      color: var(--muted);
+      font-size: clamp(0.8rem, 2vw, 0.9rem);
+      margin-top: 0.25rem;
+    }
+
+    /* Mobile Responsive Progress Bar */
+    .progress-bar {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+
+    .progress-bar::-webkit-scrollbar {
+      display: none;
+    }
+
+    @media (max-width: 480px) {
+      .progress-step {
+        font-size: 0.85rem;
+        padding: 0.75rem 0.5rem;
+      }
+    }
+
+    select:disabled {
+      background: var(--line);
+      opacity: 0.8;
+    }
+    .booking-container {
+      max-width: min(100% - 2rem, 800px);
+      margin: clamp(1rem, 4vw, 2rem) auto;
+      padding: clamp(1rem, 4vw, 2rem);
+    }
+
+    .booking-step {
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: clamp(1rem, 4vw, 2rem);
+      margin-bottom: clamp(1rem, 4vw, 2rem);
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+    }
+
+    .booking-step h2 {
+      color: var(--fg);
+      margin-bottom: 1.5rem;
+      font-size: clamp(1.2rem, 3vw, 1.5rem);
+    }
+
+    .form-group {
+      margin-bottom: clamp(1rem, 3vw, 1.5rem);
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 0.5rem;
+      color: var(--fg);
+      font-weight: 500;
+      font-size: clamp(0.9rem, 2.5vw, 1rem);
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width: 100%;
+      padding: clamp(0.5rem, 2vw, 0.75rem);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--bg);
+      color: var(--fg);
+      font-size: clamp(0.9rem, 2.5vw, 1rem);
+    }
+
+    .time-slots {
+      margin-top: 2rem;
+      background: var(--bg);
+      padding: 1.5rem;
+      border-radius: var(--radius);
+      border: 1px solid var(--line);
+    }
+
+    .time-slots h3 {
+      margin-bottom: 1rem;
+      color: var(--fg);
+      font-size: 1.2rem;
+    }
+
+    .time-slots-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: 1rem;
+    }
+
+    .time-slot {
+      padding: 1rem;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      text-align: center;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      background: white;
+      color: var(--fg);
+    }
+
+    .time-slot:hover:not(.disabled) {
+      border-color: var(--accent);
+      background: var(--card);
+    }
+
+    .time-slot.selected {
+      background: var(--accent);
+      color: white;
+      border-color: var(--accent);
+    }
+
+    .time-slot.disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      background: var(--line);
+    }
+
+    .progress-bar {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 2rem;
+      position: relative;
+    }
+
+    .progress-step {
+      flex: 1;
+      text-align: center;
+      padding: 1rem;
+      position: relative;
+      color: var(--muted);
+    }
+
+    .progress-step.active {
+      color: var(--accent);
+      font-weight: bold;
+    }
+
+    .progress-step::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 3px;
+      background: var(--line);
+    }
+
+    .progress-step.active::after {
+      background: var(--accent);
+    }
+
+    #map {
+      height: 300px;
+      margin: 1rem 0;
+      border-radius: var(--radius);
+    }
+
+    .error-message {
+      color: #dc2626;
+      font-size: 0.875rem;
+      margin-top: 0.5rem;
+    }
+
+    .next-button {
+      background: var(--accent);
+      color: white;
+      padding: 1rem 2rem;
+      border: none;
+      border-radius: var(--radius);
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .next-button:hover {
+      opacity: 0.9;
+    }
+
+    .next-button:disabled {
+      background: var(--line);
+      cursor: not-allowed;
+    }
+
+    /* Animation Styles */
+    .animate-fade-up {
+      opacity: 0;
+      transform: translateY(10px);
+      transition: opacity 0.4s ease, transform 0.4s ease;
+    }
+
+    .animate-fade-up.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
   </style>
 </head>
 <body>
@@ -647,7 +1066,11 @@
   <header class="site-header">
     <div class="brand" style="display:flex;align-items:center;gap:1rem;">
       <a href="index.html" style="display:flex;align-items:center;gap:1rem;text-decoration:none;color:inherit;">
-        <img class="brand-logo" src="images/logo/FrameHouseCinema Concept Logo 3.jpg" alt="FrameHouseCinema logo" />
+        <picture>
+          <source type="image/avif" srcset="images/logo/FrameHouseCinema Concept Logo 3.avif">
+          <source type="image/webp" srcset="images/logo/FrameHouseCinema Concept Logo 3.webp">
+          <img class="brand-logo" src="images/logo/FrameHouseCinema Concept Logo 3.jpg" alt="FrameHouseCinema logo" loading="eager" fetchpriority="high" />
+        </picture>
         <span class="brand-name">FrameHouseCinema</span>
       </a>
     </div>
@@ -657,7 +1080,7 @@
     </nav>
   </header>
 
-  <div class="booking-container">
+  <div class="booking-container animate-fade-up delay-200">
     <div class="progress-bar">
       <div class="progress-step active">1. Service Details</div>
       <div class="progress-step">2. Date & Time</div>
@@ -946,5 +1369,49 @@
   <script async defer
     src="https://maps.googleapis.com/maps/api/js?key=YOUR_GOOGLE_MAPS_API_KEY&callback=initMap">
   </script>
+  <script>
+    (function(){
+      if(window.__fhcAnimInit) return; window.__fhcAnimInit=true;
+      document.addEventListener('DOMContentLoaded', () => {
+        document.body.classList.add('loaded');
+        const obs=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');obs.unobserve(e.target);}})},{threshold:.1,rootMargin:'0px 0px -60px'});
+        document.querySelectorAll('.animate-fade-up').forEach(el=>obs.observe(el));
+      });
+    })();
+  </script>
+
+  <!-- FOOTER -->
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <picture>
+          <source type="image/avif" srcset="images/logo/FrameHouseCinema Concept Logo 3.avif">
+          <source type="image/webp" srcset="images/logo/FrameHouseCinema Concept Logo 3.webp">
+          <img src="images/logo/FrameHouseCinema Concept Logo 3.jpg" alt="FrameHouseCinema logo" loading="lazy">
+        </picture>
+        <div class="brand-name">FrameHouseCinema</div>
+      </div>
+      <div class="footer-links">
+        <a href="index.html">Home</a>
+        <a href="booking.html">Services</a>
+        <a href="about.html">About Us</a>
+        <a href="contact.html">Contact</a>
+      </div>
+      <div class="footer-social">
+        <a href="#" aria-label="Facebook" class="social-icon">
+          <img src="images/icons/facebook.svg" alt="Facebook">
+        </a>
+        <a href="#" aria-label="Twitter" class="social-icon">
+          <img src="images/icons/twitter.svg" alt="Twitter">
+        </a>
+        <a href="#" aria-label="Instagram" class="social-icon">
+          <img src="images/icons/instagram.svg" alt="Instagram">
+        </a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2023 FrameHouseCinema. All rights reserved.</p>
+    </div>
+  </footer>
 </body>
 </html>

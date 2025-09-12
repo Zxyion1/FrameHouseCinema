@@ -30,7 +30,12 @@ body {
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* fade in whole page */
+  opacity: 0;
+  transition: opacity .35s ease;
 }
+
+body.loaded { opacity: 1; }
 
 .contact {
   background: var(--card);
@@ -51,6 +56,19 @@ img {
   max-width: 100%;
   height: auto;
 }
+
+/* --- Performance helpers --- */
+img { max-width: 100%; height: auto; image-rendering: auto; }
+img[loading="lazy"] { content-visibility: auto; }
+video { display: block; max-width: 100%; border-radius: var(--radius); }
+
+/* Defer rendering of offscreen galleries */
+.gallery { content-visibility: auto; contain-intrinsic-size: 800px 600px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-up { opacity: 1; transform: none; transition: none; }
+}
+/* --- End performance helpers --- */
 
 /* HEADER */
 .site-header {
@@ -444,3 +462,21 @@ img {
   font-size: .85rem;
   margin-top: 1rem;
 }
+
+/* --- Entry Animations (Apple‑like) --- */
+body { /* fade in whole page */
+  opacity: 0;
+  transition: opacity .35s ease;
+}
+body.loaded { opacity: 1; }
+.animate-fade-up {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity .7s cubic-bezier(.4,0,.2,1), transform .7s cubic-bezier(.4,0,.2,1);
+}
+.animate-fade-up.visible { opacity: 1; transform: translateY(0); }
+.delay-100 { transition-delay: .10s; }
+.delay-200 { transition-delay: .20s; }
+.delay-300 { transition-delay: .30s; }
+.delay-400 { transition-delay: .40s; }
+/* --- End Entry Animations --- */

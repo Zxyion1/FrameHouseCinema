@@ -5,19 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>FrameHouseCinema</title>
   <meta name="description" content="FrameHouseCinema — film & photo portfolio">
-  <link rel="preload" href="style.css" as="style">
   <link rel="stylesheet" href="style.css">
 </head>
-<body class="">
+<body>
   <!-- HEADER -->
-  <header class="site-header animate-fade-up delay-100">
+  <header class="site-header">
     <div class="brand" style="display:flex;align-items:center;gap:1rem;">
       <a href="index.html" style="display:flex;align-items:center;gap:1rem;text-decoration:none;color:inherit;">
-        <picture>
-          <source type="image/avif" srcset="images/logo/FrameHouseCinema Concept Logo 3.avif">
-          <source type="image/webp" srcset="images/logo/FrameHouseCinema Concept Logo 3.webp">
-          <img class="brand-logo" src="images/logo/FrameHouseCinema Concept Logo 3.jpg" alt="FrameHouseCinema logo" loading="eager" fetchpriority="high" />
-        </picture>
+        <img class="brand-logo" src="../Media/logo/FrameHouseCinema Concept Logo 3.jpg" alt="FrameHouseCinema logo" />
         <span class="brand-name">FrameHouseCinema</span>
       </a>
       <button class="book-btn" onclick="location.href='booking.html'">Book Photos and Videos</button>
@@ -33,7 +28,7 @@
   </header>
 
   <!-- HERO -->
-  <main class="hero animate-fade-up delay-200">
+  <main class="hero">
     <div class="hero-slideshow"></div>
     <div class="hero-inner">
       <h1>Film. Photo. Feeling.</h1>
@@ -43,25 +38,25 @@
   </main>
 
   <!-- SECTIONS -->
-  <section class="sections animate-fade-up delay-300" aria-label="Portfolio sections">
+  <section class="sections" aria-label="Portfolio sections">
     <a class="tile" href="scenery.html">
-      <div class="preview" data-images='["Media/scenery/IMG_3210.JPG","Media/scenery/IMG_0489.JPG","Media/scenery/IMG_2764.JPG"]'></div>
+      <div class="preview" data-images='["../Media/scenery/IMG_3210.JPG","../Media/scenery/IMG_0489.JPG","../Media/scenery/IMG_2764.JPG"]'></div>
       <h2>Scenery</h2>
     </a>
     <a class="tile" href="people.html">
-      <div class="preview" data-images='["Media/people/IMG_1499.JPG","Media/people/IMG_4889.JPG","Media/people/IMG_4925.JPG"]'></div>
+      <div class="preview" data-images='["../Media/people/IMG_1499.JPG","../Media/people/IMG_4889.JPG","../Media/people/IMG_4925.JPG"]'></div>
       <h2>People</h2>
     </a>
     <a class="tile" href="lighting.html">
-      <div class="preview" data-images='["Media/lighting/IMG_0705.JPG","Media/lighting/IMG_3498.JPG","Media/lighting/IMG_3541.JPG"]'></div>
+      <div class="preview" data-images='["../Media/lighting/IMG_0705.JPG","../Media/lighting/IMG_3498.JPG","../Media/lighting/IMG_3541.JPG"]'></div>
       <h2>Lighting</h2>
     </a>
     <a class="tile" href="architecture.html">
-      <div class="preview" data-images='["Media/architecture/IMG_4218.JPG","Media/architecture/IMG_4561.JPG","Media/architecture/IMG_5321.JPG"]'></div>
+      <div class="preview" data-images='["../Media/architecture/IMG_4218.JPG","../Media/architecture/IMG_4561.JPG","../Media/architecture/IMG_5321.JPG"]'></div>
       <h2>Architecture</h2>
     </a>
     <a class="tile" href="events.html">
-      <div class="preview" data-images='["Media/events/events1.jpg","Media/events/events2.jpg","Media/events/events3.jpg"]'></div>
+      <div class="preview" data-images='["../Media/events/events1.jpg","../Media/events/events2.jpg","../Media/events/events3.jpg"]'></div>
       <h2>Events</h2>
     </a>
     <a class="tile tile-videos" href="videos.html" aria-label="videos">
@@ -73,14 +68,10 @@
   </section>
 
   <!-- FOOTER -->
-  <footer class="site-footer animate-fade-up delay-400">
+  <footer class="site-footer">
     <div class="footer-grid">
       <div class="footer-brand">
-        <picture>
-          <source type="image/avif" srcset="images/logo/FrameHouseCinema Concept Logo 3.avif">
-          <source type="image/webp" srcset="images/logo/FrameHouseCinema Concept Logo 3.webp">
-          <img src="images/logo/FrameHouseCinema Concept Logo 3.jpg" alt="FrameHouseCinema logo" loading="lazy">
-        </picture>
+        <img src="../Media/logo/FrameHouseCinema Concept Logo 3.jpg" alt="FrameHouseCinema logo">
         <div class="brand-name">FrameHouseCinema</div>
       </div>
       <div class="contact" aria-labelledby="contact-heading">
@@ -100,28 +91,22 @@
     // Set year
     document.getElementById('year').textContent = new Date().getFullYear();
 
-    // Defer heavy work until idle or after first paint
-    const deferWork = (fn)=>('requestIdleCallback' in window)?requestIdleCallback(fn,{timeout:1200}):setTimeout(fn,150);
+    // HERO SLIDESHOW
+    const heroImages = [
+      "../Media/scenery/IMG_3210.JPG",
+      "../Media/people/IMG_1499.JPG",
+      "../Media/lighting/IMG_0705.JPG",
+      "../Media/architecture/IMG_4218.JPG",
+      "../Media/events/events1.jpg"
+    ];
+    let heroIndex = 0;
+    const heroEl = document.querySelector('.hero-slideshow');
+    heroEl.style.backgroundImage = `url('${heroImages[heroIndex]}')`;
 
-    // HERO SLIDESHOW (deferred)
-    deferWork(()=>{
-      const heroImages = [
-        "Media/scenery/IMG_3210.JPG",
-        "Media/people/IMG_1499.JPG",
-        "Media/lighting/IMG_0705.JPG",
-        "Media/architecture/IMG_4218.JPG",
-        "Media/events/events1.jpg"
-      ];
-      let heroIndex = 0;
-      const heroEl = document.querySelector('.hero-slideshow');
-      if (!heroEl) return;
+    setInterval(() => {
+      heroIndex = (heroIndex + 1) % heroImages.length;
       heroEl.style.backgroundImage = `url('${heroImages[heroIndex]}')`;
-
-      setInterval(() => {
-        heroIndex = (heroIndex + 1) % heroImages.length;
-        heroEl.style.backgroundImage = `url('${heroImages[heroIndex]}')`;
-      }, 3000); // 3 seconds per slide
-    });
+    }, 3000); // 3 seconds per slide
 
     // Hover slideshows on tiles (3 seconds each)
     const timers = new Map();
@@ -150,48 +135,31 @@
       preview.parentElement.addEventListener('mouseleave', stop);
     });
 
-    // Video hero tile (deferred + lazy)
-    deferWork(()=>{
-      const videoHeroList = [
-        "Media/videos/MVI_6281.MP4",
-        "Media/videos/MVI_6288.MP4",
-        "Media/videos/MVI_6305.MP4",
-        "Media/videos/MVI_6311.MP4",
-        "Media/videos/MVI_6312.MP4"
-      ];
-      const videoHero = document.getElementById('homeVideoHero');
-      if(!videoHero) return;
-      let videoHeroIdx = 0; let timer;
-      function next(){
-        videoHero.src = videoHeroList[videoHeroIdx];
-        videoHero.currentTime = 0;
-        videoHero.play().catch(()=>{});
-        videoHeroIdx = (videoHeroIdx + 1) % videoHeroList.length;
-        timer = setTimeout(next, 3000);
-      }
-      // Only start once the videos tile is near viewport
+    // Video hero slideshow for videos tile (3s per video)
+    const videoHeroList = [
+      "../Media/videos/MVI_6281.MP4",
+      "../Media/videos/MVI_6288.MP4",
+      "../Media/videos/MVI_6305.MP4",
+      "../Media/videos/MVI_6311.MP4",
+      "../Media/videos/MVI_6312.MP4"
+    ];
+    const videoHero = document.getElementById('homeVideoHero');
+    let videoHeroIdx = 0;
+    let videoHeroTimer;
+    function playNextHomeVideo() {
+      videoHero.src = videoHeroList[videoHeroIdx];
+      videoHero.currentTime = 0;
+      videoHero.play().catch(()=>{});
+      videoHeroIdx = (videoHeroIdx + 1) % videoHeroList.length;
+      videoHeroTimer = setTimeout(playNextHomeVideo, 3000);
+    }
+    if (videoHero) {
+      playNextHomeVideo();
+      // Pause on hover, resume on mouseleave
       const tile = videoHero.closest('.tile-videos');
-      const io = new IntersectionObserver(es=>{
-        es.forEach(e=>{
-          if(e.isIntersecting){ next(); io.disconnect(); }
-        });
-      },{rootMargin:'200px'});
-      io.observe(tile);
-    });
-
-    // Entry animation logic
-    document.addEventListener('DOMContentLoaded', () => {
-      document.body.classList.add('loaded');
-      const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('visible');
-            observer.unobserve(entry.target);
-          }
-        });
-      }, { threshold: 0.1, rootMargin: '0px 0px -60px' });
-      document.querySelectorAll('.animate-fade-up').forEach(el => observer.observe(el));
-    });
+      tile.addEventListener('mouseenter', () => { videoHero.pause(); clearTimeout(videoHeroTimer); });
+      tile.addEventListener('mouseleave', () => { playNextHomeVideo(); });
+    }
   </script>
 </body>
 </html>
