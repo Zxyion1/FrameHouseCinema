@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>About | FrameHouseCinema</title>
+  <meta name="description" content="About FrameHouseCinema">
+  <link rel="preload" href="style.css" as="style">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .about-hero { text-align:center; padding:3rem 1rem 1rem; }
+    .about-hero h1 { font-size: clamp(2rem, 5vw, 3rem); margin: 0 0 .5rem; }
+    .about-wrap { max-width: 1100px; margin: 0 auto; padding: 1rem; display:grid; gap:2rem; grid-template-columns: 1fr; }
+    @media (min-width: 900px){ .about-wrap { grid-template-columns: 1fr 1.2fr; align-items: start; } }
+    .about-photo { position:relative; background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); overflow:hidden; }
+    .about-photo .placeholder { aspect-ratio: 4 / 5; display:flex; align-items:center; justify-content:center; color:#999; background: #0b0b0b; }
+    .about-photo img { width: 100%; height: 100%; object-fit: cover; display:block; }
+    .about-body { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); padding: 1.5rem; line-height: 1.6; }
+    .kv { display:flex; gap:1rem; flex-wrap: wrap; margin:.75rem 0 0; }
+    .kv .chip { background: #111; border:1px solid #222; color:#ddd; padding:.4rem .7rem; border-radius:999px; font-size:.9rem; }
+  </style>
+  <script defer src="js/perf.js"></script>
+  <script>
+    (function(){
+      if(window.__fhcAnimInit) return; window.__fhcAnimInit=true;
+      document.addEventListener('DOMContentLoaded', () => {
+        document.body.classList.add('loaded');
+        const obs=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');obs.unobserve(e.target);}})},{threshold:.1,rootMargin:'0px 0px -60px'});
+        document.querySelectorAll('.animate-fade-up').forEach(el=>obs.observe(el));
+      });
+    })();
+  </script>
+  <meta name="robots" content="index,follow">
+  <link rel="icon" href="images/logo/FrameHouseCinema Concept Logo 3.jpg">
+  <meta name="theme-color" content="#000000">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="FrameHouseCinema">
+  <link rel="apple-touch-icon" href="images/logo/FrameHouseCinema Concept Logo 3.jpg">
+  <meta property="og:title" content="About | FrameHouseCinema">
+  <meta property="og:description" content="Learn about FrameHouseCinema—people, process, and passion.">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="images/logo/FrameHouseCinema Concept Logo 3.jpg">
+  <meta property="og:url" content="about.html">
+</head>
+<body>
+  <header class="site-header animate-fade-up delay-100">
+    <div class="brand" style="display:flex;align-items:center;gap:1rem;">
+      <a href="index.html" style="display:flex;align-items:center;gap:1rem;text-decoration:none;color:inherit;">
+        <img class="brand-logo" src="images/logo/FrameHouseCinema Concept Logo 3.jpg" alt="FrameHouseCinema logo" loading="eager" fetchpriority="high" />
+        <span class="brand-name">FrameHouseCinema</span>
+      </a>
+      <button class="book-btn" onclick="location.href='booking.html'">Book Photos and Videos</button>
+    </div>
+    <nav class="top-nav">
+      <a href="scenery.html">scenery</a>
+      <a href="people.html">people</a>
+      <a href="lighting.html">lighting</a>
+      <a href="architecture.html">architecture</a>
+      <a href="events.html">events</a>
+      <a href="videos.html">videos</a>
+      <a href="about.html" aria-current="page">about</a>
+    </nav>
+  </header>
+
+  <main class="animate-fade-up delay-200">
+    <section class="about-hero">
+      <h1>About FrameHouseCinema</h1>
+      <p>Premium photo and video with a cinematic touch—modern, sleek, and personal.</p>
+    </section>
+    <section class="about-wrap">
+      <div class="about-photo animate-fade-up delay-200">
+        <!-- Replace this placeholder with your professional portrait -->
+        <!-- Example: <img src="Media/people/your-portrait.jpg" alt="Your Name"> -->
+        <div class="placeholder">Add your professional photo here</div>
+      </div>
+      <article class="about-body animate-fade-up delay-300">
+        <h2>Hi, I’m the creator behind FrameHouseCinema</h2>
+        <p>
+          I specialize in crafting striking visuals—from portraits and events to brand content and creative lighting. 
+          Every project gets a clean, cinematic finish with attention to detail and a smooth experience from booking to delivery.
+        </p>
+        <p>
+          My process is collaborative and efficient: clear planning, relaxed shoots, fast turnarounds, and premium quality delivery.
+          I’m based in Bowling Green, Ohio, and available for travel.
+        </p>
+        <div class="kv">
+          <span class="chip">Portraits</span>
+          <span class="chip">Events</span>
+          <span class="chip">Brand</span>
+          <span class="chip">Creative Lighting</span>
+          <span class="chip">Cinematic Video</span>
+        </div>
+      </article>
+    </section>
+  </main>
+
+  <footer class="site-footer animate-fade-up delay-400">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <img src="images/logo/FrameHouseCinema Concept Logo 3.jpg" alt="FrameHouseCinema logo" loading="lazy" decoding="async">
+        <div class="brand-name">FrameHouseCinema</div>
+      </div>
+      <div class="contact" aria-labelledby="contact-heading">
+        <h3 id="contact-heading">contact info</h3>
+        <ul>
+          <li>Email: <a href="mailto:FrameHouseCinema@gmail.com">FrameHouseCinema@gmail.com</a></li>
+          <li>Phone: <a href="tel:+14199579645">+1 (419)-957-9645</a></li>
+          <li>Instagram: <a href="#">instagram.com/FrameHouseCinema</a></li>
+          <li>Location: Bowling Green, Ohio</li>
+        </ul>
+      </div>
+    </div>
+    <p class="tiny">© <span id="year"></span> FrameHouseCinema. All rights reserved.</p>
+  </footer>
+  <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+  <script src="js/perf.js" defer></script>
+  <script>
+    // Initialize animations for this page as well
+    (function(){
+      const ready = () => {
+        const obs=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');obs.unobserve(e.target);}})},{threshold:.1,rootMargin:'0px 0px -60px'});
+        document.querySelectorAll('.animate-fade-up').forEach(el=>obs.observe(el));
+      };
+      if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', ready); else ready();
+    })();
+  </script>
+  
+</body>
+</html>
