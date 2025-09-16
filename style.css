@@ -480,3 +480,8 @@ body.loaded { opacity: 1; }
 .delay-300 { transition-delay: .30s; }
 .delay-400 { transition-delay: .40s; }
 /* --- End Entry Animations --- */
+
+/* --- performance utilities --- */
+.fast .animate-fade-up { transition-duration: 200ms; animation-duration: 200ms; transition-delay: 0ms; animation-delay: 0ms; }
+.fast [class*="delay-"] { transition-delay: 0ms; animation-delay: 0ms; }
+.cv-auto { content-visibility: auto; contain-intrinsic-size: 1px 1000px; }

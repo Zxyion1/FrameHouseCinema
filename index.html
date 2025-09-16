@@ -7,6 +7,13 @@
   <meta name="description" content="FrameHouseCinema — film & photo portfolio">
   <link rel="preload" href="style.css" as="style">
   <link rel="stylesheet" href="style.css">
+  <link rel="preload" as="image" href="Media/scenery/IMG_3210.JPG" fetchpriority="high">
+  <style>
+    /* Fast animation overrides */
+    .fast .animate-fade-up { transition-duration: 200ms !important; animation-duration: 200ms !important; transition-delay: 0ms !important; animation-delay: 0ms !important; }
+    .fast [class*="delay-"] { transition-delay: 0ms !important; animation-delay: 0ms !important; }
+  </style>
+  <script>document.documentElement.classList.add('fast');</script>
 </head>
 <body class="">
   <!-- HEADER -->
@@ -66,7 +73,7 @@
     </a>
     <a class="tile tile-videos" href="videos.html" aria-label="videos">
       <div class="video-hero-preview" style="position:absolute;inset:0;width:100%;height:100%;overflow:hidden;border-radius:var(--radius);background:#000;">
-        <video id="homeVideoHero" preload="auto" muted playsinline autoplay loop style="width:100%;height:100%;object-fit:cover;display:block;border-radius:var(--radius);background:#000;"></video>
+        <video id="homeVideoHero" preload="metadata" muted playsinline autoplay loop style="width:100%;height:100%;object-fit:cover;display:block;border-radius:var(--radius);background:#000;"></video>
       </div>
       <h2>Videos</h2>
     </a>
@@ -100,8 +107,8 @@
     // Set year
     document.getElementById('year').textContent = new Date().getFullYear();
 
-    // Defer heavy work until idle or after first paint
-    const deferWork = (fn)=>('requestIdleCallback' in window)?requestIdleCallback(fn,{timeout:1200}):setTimeout(fn,150);
+    // Defer heavy work until idle or after first paint (faster)
+    const deferWork = (fn)=>('requestIdleCallback' in window)?requestIdleCallback(fn,{timeout:200}):setTimeout(fn,50);
 
     // HERO SLIDESHOW (deferred)
     deferWork(()=>{
@@ -179,7 +186,7 @@
       io.observe(tile);
     });
 
-    // Entry animation logic
+    // Entry animation logic (trigger earlier)
     document.addEventListener('DOMContentLoaded', () => {
       document.body.classList.add('loaded');
       const observer = new IntersectionObserver((entries) => {
@@ -189,9 +196,10 @@
             observer.unobserve(entry.target);
           }
         });
-      }, { threshold: 0.1, rootMargin: '0px 0px -60px' });
+      }, { threshold: 0, rootMargin: '100px' });
       document.querySelectorAll('.animate-fade-up').forEach(el => observer.observe(el));
     });
   </script>
+  <script src="js/perf.js" defer></script>
 </body>
 </html>

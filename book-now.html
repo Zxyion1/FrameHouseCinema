@@ -17,6 +17,12 @@
   <script src="js/service-selection.js"></script>
   <script src="js/time-selection.js"></script>
 
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+
   <style>
     .booking-section {
       background: var(--card);
@@ -269,6 +275,11 @@
       opacity: 1;
       transform: translateY(0);
     }
+
+    /* Success screen styling */
+    #step5 .code-box{display:flex;gap:.5rem;align-items:center;justify-content:center;margin:.75rem 0}
+    #step5 .code{font:700 1.1rem ui-monospace;background:#fff;border:1px dashed var(--line);padding:.5rem 1rem;border-radius:10px}
+    #step5 .copy{background:var(--accent);color:#fff;border:none;border-radius:10px;padding:.45rem .75rem;cursor:pointer}
   </style>
   
   <script>
@@ -664,6 +675,11 @@
       opacity: 1;
       transform: translateY(0);
     }
+
+    /* Success screen styling */
+    #step5 .code-box{display:flex;gap:.5rem;align-items:center;justify-content:center;margin:.75rem 0}
+    #step5 .code{font:700 1.1rem ui-monospace;background:#fff;border:1px dashed var(--line);padding:.5rem 1rem;border-radius:10px}
+    #step5 .copy{background:var(--accent);color:#fff;border:none;border-radius:10px;padding:.45rem .75rem;cursor:pointer}
   </style>
   
   <script>
@@ -1059,7 +1075,73 @@
       opacity: 1;
       transform: translateY(0);
     }
+
+    /* Success screen styling */
+    #step5 .code-box{display:flex;gap:.5rem;align-items:center;justify-content:center;margin:.75rem 0}
+    #step5 .code{font:700 1.1rem ui-monospace;background:#fff;border:1px dashed var(--line);padding:.5rem 1rem;border-radius:10px}
+    #step5 .copy{background:var(--accent);color:#fff;border:none;border-radius:10px;padding:.45rem .75rem;cursor:pointer}
   </style>
+  
+  <script>
+    // Initialize Firebase once
+    (function(){
+      if(!window.__fhcFb){ firebase.initializeApp(window.firebaseConfig); window.__fhcFb=true; }
+      window.__fhcDb = firebase.firestore();
+      window.__fhcStore = firebase.storage();
+    })();
+
+    function generateClientCode(){
+      return 'FHC-' + Math.random().toString(36).slice(2,8).toUpperCase();
+    }
+
+    async function submitBooking(){
+      try {
+        const details = JSON.parse(sessionStorage.getItem('bookingDetails')||'{}');
+        const name = (document.getElementById('name')?.value||'').trim();
+        const email = (document.getElementById('email')?.value||'').trim();
+        const phone = (document.getElementById('phone')?.value||'').trim();
+        const service = (document.getElementById('service-type')?.value||'').trim();
+        const notes = (document.getElementById('special-requests')?.value||'').trim();
+        const duration = parseInt(document.getElementById('duration-select')?.value||details.duration||1);
+        const totalPrice = (typeof calculateTotalPrice==='function') ? calculateTotalPrice(duration) : (150*duration);
+        const clientCode = generateClientCode();
+
+        if(!email || !name){ alert('Please enter your name and email.'); return; }
+        if(!details.date || !details.time){ alert('Please select date and time before submitting.'); return; }
+
+        const payload = {
+          name,email,phone,service,notes,
+          date: details.date,
+          time: details.time,
+          duration: duration,
+          totalPrice: totalPrice,
+          clientCode,
+          status: 'new',
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        };
+
+        const docRef = await window.__fhcDb.collection('bookings').add(payload);
+        // Show success and client code
+        document.getElementById('client-code').textContent = clientCode;
+        const link = document.getElementById('client-portal-link');
+        link.href = 'client.html?code=' + encodeURIComponent(clientCode);
+        document.getElementById('copy-code').onclick = async ()=>{
+          await navigator.clipboard.writeText(clientCode);
+          document.getElementById('copy-code').textContent = 'Copied';
+          setTimeout(()=>document.getElementById('copy-code').textContent='Copy',1200);
+        };
+
+        // Navigate to success step
+        document.querySelectorAll('.booking-step').forEach(el=>el.style.display='none');
+        const steps = document.querySelectorAll('.progress-step');
+        if(steps[3]) steps[3].classList.add('active');
+        document.getElementById('step5').style.display='block';
+      } catch (err) {
+        console.error(err);
+        alert('Could not save booking. Please try again.');
+      }
+    }
+  </script>
 </head>
 <body>
   <!-- HEADER -->
@@ -1172,6 +1254,17 @@
       </div>
       <div id="card-errors" class="error-message"></div>
       <button class="next-button" onclick="submitBooking()">Complete Booking</button>
+    </div>
+
+    <!-- Step 5: Success + Client Code -->
+    <div class="booking-step" id="step5" style="display:none;">
+      <h2>Booking Confirmed</h2>
+      <p>Your booking was saved successfully. Share this client code to access delivered media later:</p>
+      <div class="code-box">
+        <span id="client-code" class="code">FHC-XXXXXX</span>
+        <button class="copy" id="copy-code">Copy</button>
+      </div>
+      <p><a id="client-portal-link" class="next-button" href="#">Open Client Portal</a></p>
     </div>
   </div>
 
@@ -1413,5 +1506,32 @@
       <p>&copy; 2023 FrameHouseCinema. All rights reserved.</p>
     </div>
   </footer>
+
+  <script>
+    // Ensure submitBooking() is invoked from UI
+    document.addEventListener('DOMContentLoaded', () => {
+      const tryBind = () => {
+        const btn = document.getElementById('submitBooking') || document.querySelector('[data-action="submit-booking"]') || document.getElementById('confirm-booking');
+        const form = document.getElementById('bookingForm');
+        if (btn) {
+          btn.addEventListener('click', (e)=>{ e.preventDefault(); submitBooking(); });
+        }
+        if (form) {
+          form.addEventListener('submit', (e)=>{ e.preventDefault(); submitBooking(); });
+        }
+        if (!btn && !form) {
+          // Fallback button if page has no explicit submit control wired yet
+          const fb = document.createElement('button');
+          fb.textContent = 'Complete Booking';
+          fb.className = 'next-button';
+          fb.style.position='fixed'; fb.style.right='16px'; fb.style.bottom='16px';
+          document.body.appendChild(fb);
+          fb.addEventListener('click', (e)=>{ e.preventDefault(); submitBooking(); });
+        }
+      };
+      tryBind();
+    });
+  </script>
+  <script src="js/perf.js" defer></script>
 </body>
 </html>

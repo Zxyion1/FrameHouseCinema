@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Client Portal | FrameHouseCinema</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .portal{max-width:900px;margin:2rem auto;padding:1.25rem;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+    .code-form{display:flex;gap:.5rem;align-items:center;margin-bottom:1rem}
+    .code-form input{flex:1;padding:.6rem;border:1px solid var(--line);border-radius:10px}
+    .code-form button{padding:.6rem 1rem;border:none;border-radius:10px;background:var(--accent);color:#fff}
+    .files{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:1rem}
+    .card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:.5rem}
+    .tiny{color:#64748b}
+  </style>
+</head>
+<body>
+  <div class="portal">
+    <h1>Client Portal</h1>
+    <p class="tiny">Enter your client code to access your gallery and downloads.</p>
+    <div class="code-form">
+      <input id="codeInput" placeholder="Enter your client code (e.g., FHC-AB12CD)">
+      <button id="openBtn">Open</button>
+    </div>
+    <div id="booking"></div>
+    <div id="files" class="files"></div>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script>
+    firebase.initializeApp(window.firebaseConfig);
+    const db = firebase.firestore();
+    const storage = firebase.storage();
+
+    const codeInput = document.getElementById('codeInput');
+    const openBtn = document.getElementById('openBtn');
+    const bookingEl = document.getElementById('booking');
+    const filesEl = document.getElementById('files');
+
+    async function openByCode(code){
+      bookingEl.textContent = 'Loading...'; filesEl.innerHTML = '';
+      const snap = await db.collection('bookings').where('clientCode','==',code).limit(1).get();
+      if (snap.empty) { bookingEl.textContent = 'No booking found for this code.'; return; }
+      const doc = snap.docs[0]; const b = doc.data();
+      bookingEl.innerHTML = `<h3>${b.name} — ${b.service||''}</h3>
+        <div class="tiny">${b.date||''} • ${b.time||''} • ${b.duration||''}h • $${b.totalPrice||''}</div>`;
+
+      // List delivered files from a storage folder named with the client code
+      try {
+        const listRef = storage.ref('deliveries/'+code+'/');
+        const res = await listRef.listAll();
+        if(!res.items.length){ filesEl.innerHTML = '<div class="tiny">No files yet. Check back soon.</div>'; return; }
+        for (const item of res.items){
+          const url = await item.getDownloadURL();
+          const name = item.name;
+          const card = document.createElement('div');
+          card.className = 'card';
+          if (/\.(mp4|mov|webm)$/i.test(name)) {
+            card.innerHTML = `<video src="${url}" controls style="width:100%;height:180px;object-fit:cover;border-radius:8px"></video>
+              <div class="tiny">${name}</div>`;
+          } else {
+            card.innerHTML = `<img src="${url}" alt="${name}" loading="lazy" style="width:100%;height:180px;object-fit:cover;border-radius:8px"/>
+              <div class="tiny">${name}</div>`;
+          }
+          filesEl.appendChild(card);
+        }
+      } catch(err){ filesEl.innerHTML = '<div class="tiny">Unable to list files.</div>'; }
+    }
+
+    openBtn.onclick = ()=> openByCode(codeInput.value.trim());
+
+    // If code in URL
+    const params = new URLSearchParams(location.search); const code = params.get('code');
+    if(code){ codeInput.value = code; openByCode(code); }
+  </script>
+  <script src="js/perf.js" defer></script>
+</body>
+</html>

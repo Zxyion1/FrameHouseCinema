@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Admin • FrameHouseCinema</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .admin-shell{max-width:1200px;margin:2rem auto;padding:1rem}
+    .admin-toolbar{display:flex;gap:.75rem;align-items:center;justify-content:space-between;margin:1rem 0}
+    .admin-card{background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow)}
+    .admin-pad{padding:1rem}
+    table{width:100%;border-collapse:separate;border-spacing:0 8px}
+    th,td{padding:.65rem .9rem;background:#fff}
+    th{background:#f5f7fb;color:#334155;text-align:left}
+    tr{box-shadow:0 1px 3px rgba(0,0,0,.05)}
+    .btn{background:var(--accent);color:#fff;border:none;border-radius:10px;padding:.45rem .75rem;cursor:pointer}
+    .btn.red{background:#ef4444}
+    .row-actions{display:flex;gap:.5rem}
+    .tiny{color:#64748b}
+    .files{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+    .file-card{background:#fff;border:1px solid var(--line);border-radius:10px;padding:.5rem}
+    .pill{display:inline-block;font:600 .8rem/1.2 system-ui;background:#eef;color:#334;padding:.2rem .5rem;border-radius:999px}
+    input,select{padding:.45rem .6rem;border:1px solid var(--line);border-radius:10px}
+  </style>
+</head>
+<body>
+  <!-- HEADER (theme) -->
+  <header class="site-header">
+    <div class="brand" style="display:flex;align-items:center;gap:1rem;">
+      <a href="index.html" style="display:flex;align-items:center;gap:1rem;text-decoration:none;color:inherit;">
+        <img class="brand-logo" src="images/logo/FrameHouseCinema Concept Logo 3.jpg" alt="FrameHouseCinema logo" />
+        <span class="brand-name">FrameHouseCinema Admin</span>
+      </a>
+    </div>
+    <nav class="top-nav">
+      <a href="index.html">Home</a>
+      <a href="booking.html">Booking</a>
+      <a href="videos.html">Videos</a>
+    </nav>
+  </header>
+
+  <main class="admin-shell">
+    <div class="admin-toolbar">
+      <div>
+        <button id="loginBtn" class="btn">Sign in with Google</button>
+        <button id="logoutBtn" class="btn red" style="display:none">Sign out</button>
+        <span id="who" class="tiny"></span>
+      </div>
+      <div style="display:flex;gap:.5rem">
+        <select id="statusFilter">
+          <option value="">All</option>
+          <option>new</option>
+          <option>confirmed</option>
+          <option>delivered</option>
+        </select>
+        <input id="searchInput" placeholder="Search name/email/code" />
+      </div>
+    </div>
+
+    <div class="admin-card">
+      <div class="admin-pad">
+        <table>
+          <thead>
+            <tr>
+              <th>Client</th>
+              <th>Service</th>
+              <th>Date</th>
+              <th>Time</th>
+              <th>Duration</th>
+              <th>Total</th>
+              <th>Code</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="rows"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <section id="delivery" class="admin-card" style="margin-top:1rem;display:none">
+      <div class="admin-pad">
+        <h3 style="margin-top:0">Deliveries for <span id="deliverCode" class="pill"></span></h3>
+        <div style="display:flex;gap:.5rem;align-items:center;margin:.5rem 0">
+          <input type="file" id="fileInput" multiple>
+          <button id="uploadBtn" class="btn">Upload</button>
+          <button id="refreshBtn" class="btn" style="background:#475569">Refresh</button>
+          <a id="openPortal" class="btn" target="_blank">Open Client Portal</a>
+        </div>
+        <div id="progress" class="tiny"></div>
+        <div id="files" class="files" style="margin-top:.75rem"></div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer"><p class="tiny">© <span id="year"></span> FrameHouseCinema</p></footer>
+
+  <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script src="js/perf.js" defer></script>
+  <script>
+    // Init
+    firebase.initializeApp(window.firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+    const storage = firebase.storage();
+
+    const rowsEl = document.getElementById('rows');
+    const who = document.getElementById('who');
+    const loginBtn = document.getElementById('loginBtn');
+    const logoutBtn = document.getElementById('logoutBtn');
+    const statusFilter = document.getElementById('statusFilter');
+    const searchInput = document.getElementById('searchInput');
+
+    const deliverySec = document.getElementById('delivery');
+    const deliverCodeEl = document.getElementById('deliverCode');
+    const fileInput = document.getElementById('fileInput');
+    const uploadBtn = document.getElementById('uploadBtn');
+    const refreshBtn = document.getElementById('refreshBtn');
+    const filesEl = document.getElementById('files');
+    const progressEl = document.getElementById('progress');
+    const openPortal = document.getElementById('openPortal');
+
+    let currentCode = null;
+
+    function rowHtml(d, id){
+      return `
+        <td>${d.name||'-'}<div class="tiny">${d.email||''}</div></td>
+        <td>${d.service||'-'}</td>
+        <td>${d.date||'-'}</td>
+        <td>${d.time||'-'}</td>
+        <td>${d.duration||'-'}h</td>
+        <td>$${d.totalPrice||'-'}</td>
+        <td><span class="pill">${d.clientCode||'-'}</span></td>
+        <td>
+          <select data-id="${id}" class="status">
+            <option ${d.status==='new'?'selected':''}>new</option>
+            <option ${d.status==='confirmed'?'selected':''}>confirmed</option>
+            <option ${d.status==='delivered'?'selected':''}>delivered</option>
+          </select>
+        </td>
+        <td class="row-actions">
+          <button class="btn copy" data-code="${d.clientCode}">Copy code</button>
+          <button class="btn manage" data-code="${d.clientCode}">Manage</button>
+          <a class="btn" href="client.html?code=${encodeURIComponent(d.clientCode)}" target="_blank">Portal</a>
+        </td>`;
+    }
+
+    async function listFiles(code){
+      filesEl.innerHTML = '<div class="tiny">Loading...</div>';
+      try{
+        const listRef = storage.ref('deliveries/'+code+'/');
+        const res = await listRef.listAll();
+        if(!res.items.length){ filesEl.innerHTML='<div class="tiny">No files yet.</div>'; return; }
+        filesEl.innerHTML='';
+        for(const item of res.items){
+          const url = await item.getDownloadURL();
+          const name = item.name;
+          const card = document.createElement('div');
+          card.className='file-card';
+          if (/\.(mp4|mov|webm)$/i.test(name)) {
+            card.innerHTML = `<video src="${url}" controls style="width:100%;height:180px;object-fit:cover;border-radius:8px"></video><div class=\"tiny\">${name}</div>`;
+          } else {
+            card.innerHTML = `<img src="${url}" alt="${name}" loading="lazy" style="width:100%;height:180px;object-fit:cover;border-radius:8px"/><div class=\"tiny\">${name}</div>`;
+          }
+          filesEl.appendChild(card);
+        }
+      } catch(e){ filesEl.innerHTML = '<div class="tiny">Unable to list files.</div>'; }
+    }
+
+    async function uploadFiles(){
+      const files = fileInput.files; if(!files || !files.length || !currentCode) return;
+      progressEl.textContent = 'Uploading...';
+      for(const f of files){
+        const ref = storage.ref('deliveries/'+currentCode+'/'+f.name);
+        await ref.put(f);
+      }
+      progressEl.textContent = 'Upload complete.';
+      await listFiles(currentCode);
+    }
+
+    async function load(){
+      rowsEl.innerHTML='';
+      let q = db.collection('bookings').orderBy('createdAt','desc');
+      const s = statusFilter.value; if(s) q = q.where('status','==',s);
+      const snap = await q.get();
+      const term = (searchInput.value||'').toLowerCase();
+      snap.forEach(doc=>{
+        const d = doc.data();
+        const hay = `${d.name||''} ${d.email||''} ${d.clientCode||''}`.toLowerCase();
+        if(term && !hay.includes(term)) return;
+        const tr = document.createElement('tr');
+        tr.innerHTML = rowHtml(d, doc.id);
+        rowsEl.appendChild(tr);
+      });
+    }
+
+    loginBtn.onclick = async ()=>{ const p = new firebase.auth.GoogleAuthProvider(); await auth.signInWithPopup(p); };
+    logoutBtn.onclick = ()=> auth.signOut();
+
+    auth.onAuthStateChanged(user=>{
+      const allowed = user && window.fhcAdminEmails?.includes(user.email);
+      if(allowed){
+        who.textContent = 'Signed in as '+user.email; loginBtn.style.display='none'; logoutBtn.style.display='inline-flex';
+        load();
+      } else {
+        who.textContent = user ? ('Access denied for '+user.email) : 'Sign in to view bookings.';
+        loginBtn.style.display='inline-flex'; logoutBtn.style.display='none';
+        rowsEl.innerHTML='';
+      }
+    });
+
+    statusFilter.onchange = load;
+    searchInput.oninput = ()=>{ clearTimeout(window.__t); window.__t=setTimeout(load,200); };
+
+    document.addEventListener('click', async (e)=>{
+      if(e.target.classList.contains('copy')){
+        const code = e.target.dataset.code; if(code){ await navigator.clipboard.writeText(code); e.target.textContent='Copied'; setTimeout(()=>e.target.textContent='Copy code',1200); }
+      }
+      if(e.target.classList.contains('status')){
+        const id = e.target.getAttribute('data-id');
+        await db.collection('bookings').doc(id).update({ status: e.target.value });
+      }
+      if(e.target.classList.contains('manage')){
+        currentCode = e.target.dataset.code; if(!currentCode) return;
+        deliverCodeEl.textContent = currentCode;
+        openPortal.href = 'client.html?code='+encodeURIComponent(currentCode);
+        deliverySec.style.display='block';
+        await listFiles(currentCode);
+      }
+    });
+
+    uploadBtn.onclick = uploadFiles;
+    refreshBtn.onclick = ()=> currentCode && listFiles(currentCode);
+  </script>
+</body>
+</html>
