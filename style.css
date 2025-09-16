@@ -485,3 +485,20 @@ body.loaded { opacity: 1; }
 .fast .animate-fade-up { transition-duration: 200ms; animation-duration: 200ms; transition-delay: 0ms; animation-delay: 0ms; }
 .fast [class*="delay-"] { transition-delay: 0ms; animation-delay: 0ms; }
 .cv-auto { content-visibility: auto; contain-intrinsic-size: 1px 1000px; }
+
+/* Secondary ghost-style button used for About link and resume placeholder */
+.ghost-btn {
+  padding: .45rem .9rem;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--fg);
+  font-weight: 600;
+  border: 1px solid var(--line);
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s, border-color 0.2s;
+  white-space: nowrap;
+}
+.ghost-btn:hover {
+  background: #dbeaf9;
+  border-color: #b8d6f2;
+}
