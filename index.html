@@ -14,16 +14,7 @@
     .fast [class*="delay-"] { transition-delay: 0ms !important; animation-delay: 0ms !important; }
   </style>
   <script>document.documentElement.classList.add('fast');</script>
-  <script>
-    // Skip intro overlay on repeat visits (persist across sessions)
-    (function(){
-      try {
-        if (localStorage.getItem('fhc_intro_seen_v1')) {
-          document.documentElement.classList.add('no-intro');
-        }
-      } catch (_) { /* storage blocked; ignore */ }
-    })();
-  </script>
+  
 </head>
 <body class="">
   <!-- INTRO OVERLAY -->
@@ -206,13 +197,11 @@
       io.observe(tile);
     });
 
-    // Intro overlay: show once ever (persisted in localStorage)
+  // Intro overlay: play on every full homepage load
     (function(){
       const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       const intro = document.getElementById('intro-overlay');
       if (!intro) return;
-      const skip = document.documentElement.classList.contains('no-intro');
-      if (skip) { intro.remove(); return; }
       // Show overlay immediately after DOM ready to avoid flash
       const reveal = () => {
         document.body.classList.add('intro-lock');
@@ -224,8 +213,7 @@
           setTimeout(() => {
             intro.remove();
             document.body.classList.remove('intro-lock');
-          }, fadeMs + 50);
-          try { localStorage.setItem('fhc_intro_seen_v1','1'); } catch(_) {}
+      }, fadeMs + 50);
         }, visibleMs);
       };
       if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', reveal); else reveal();
