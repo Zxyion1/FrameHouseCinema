@@ -236,6 +236,86 @@
       }, { threshold: 0, rootMargin: '100px' });
       document.querySelectorAll('.animate-fade-up').forEach(el => observer.observe(el));
     });
+
+    // Image path/case self-heal (handles Media vs images and .JPG vs .jpg)
+    document.addEventListener('DOMContentLoaded', () => {
+      const variants = (p) => {
+        if(!p) return [];
+        const outs = new Set();
+        const bases = [p,
+          p.replace('/Lighting/','/lighting/'),
+          p.replace('/lighting/','/Lighting/'),
+          p.replace(/^images\//,'Media/'),
+          p.replace(/^Media\//,'images/')
+        ];
+        bases.forEach(fp => {
+          outs.add(fp);
+          const m = fp.match(/\.(jpg|jpeg|png|webp|avif|mp4)$/i);
+          if(m){
+            const base = fp.slice(0, -m[1].length-1);
+            const lower = base + '.' + m[1].toLowerCase();
+            const upper = base + '.' + m[1].toUpperCase();
+            outs.add(lower); outs.add(upper);
+          } else {
+            outs.add(fp + '.JPG'); outs.add(fp + '.jpg');
+          }
+        });
+        return Array.from(outs);
+      };
+
+      function tryLoad(urls){
+        return new Promise(resolve => {
+          const list = Array.from(urls);
+          const tryNext = () => {
+            if(!list.length) return resolve(null);
+            const u = list.shift();
+            const im = new Image();
+            im.onload = () => resolve(u);
+            im.onerror = () => tryNext();
+            im.src = u;
+          };
+          tryNext();
+        });
+      }
+
+      // Fix hero slideshow first image quickly
+      (async function(){
+        const hero = document.querySelector('.hero-slideshow');
+        if(!hero) return;
+        const style = hero.style.backgroundImage;
+        const m = style.match(/url\(['"]?([^\)'"]+)/);
+        if(m && m[1]){
+          const ok = await tryLoad(variants(m[1]));
+          if(ok && ok !== m[1]) hero.style.backgroundImage = `url('${ok}')`;
+        }
+      })();
+
+      // Fix all <img>
+      (async function(){
+        const imgs = document.querySelectorAll('img');
+        for(const el of imgs){
+          const src = el.getAttribute('src'); if(!src) continue;
+          const ok = await tryLoad(variants(src));
+          if(ok && ok !== src) el.src = ok;
+        }
+      })();
+
+      // Fix tile preview data-images lists
+      (async function(){
+        const nodes = document.querySelectorAll('[data-images]');
+        for(const el of nodes){
+          try{
+            const arr = JSON.parse(el.getAttribute('data-images')||'[]');
+            const fixed = [];
+            for(const p of arr){
+              const ok = await tryLoad(variants(p));
+              fixed.push(ok||p);
+            }
+            el.setAttribute('data-images', JSON.stringify(fixed));
+          }catch{}
+        }
+      })();
+    });
   </script>
   <script src="js/perf.js" defer></script>
 </body>
