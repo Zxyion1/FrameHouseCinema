@@ -30,6 +30,7 @@
   <div id="intro-overlay" aria-hidden="true">
     <div class="intro-inner">
       <div class="byline">Created by</div>
+  <div class="intro-divider" aria-hidden="true"></div>
       <div class="name">Carter Gallagher</div>
     </div>
   </div>
@@ -216,8 +217,8 @@
       const reveal = () => {
         document.body.classList.add('intro-lock');
         intro.classList.add('show');
-        const visibleMs = 1200; // how long text stays
-        const fadeMs = prefersReduced ? 0 : 800; // fade out duration
+  const visibleMs = 1600; // how long text stays
+  const fadeMs = prefersReduced ? 0 : 900; // fade out duration
         setTimeout(() => {
           intro.classList.add('fade-out');
           setTimeout(() => {
