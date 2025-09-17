@@ -542,6 +542,15 @@ body.loaded { opacity: 1; }
   letter-spacing: 1px;
 }
 
+/* Lock scroll when intro overlay is visible */
+html:not(.no-intro) body.intro-lock {
+  overflow: hidden;
+  height: 100vh;
+}
+
+/* Ensure full coverage */
+#intro-overlay { position: fixed; inset: 0; width: 100vw; height: 100vh; }
+
 /* Reduce motion respects */
 @media (prefers-reduced-motion: reduce) {
   #intro-overlay { transition: none; }
