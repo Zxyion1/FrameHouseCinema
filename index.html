@@ -16,6 +16,13 @@
   <script>document.documentElement.classList.add('fast');</script>
 </head>
 <body class="">
+  <!-- INTRO OVERLAY -->
+  <div id="intro-overlay" aria-hidden="true">
+    <div class="intro-inner">
+      <div class="byline">Created by</div>
+      <div class="name">Carter Gallagher</div>
+    </div>
+  </div>
   <!-- HEADER -->
   <header class="site-header animate-fade-up delay-100">
     <div class="brand" style="display:flex;align-items:center;gap:1rem;">
@@ -48,10 +55,6 @@
       <h1>Film. Photo. Feeling.</h1>
       <p>Stories crafted with care — cinematic, welcoming, and unmistakably you.</p>
       <p class="tagline">Power your imagination. Create something extraordinary.</p>
-      <div class="cta-row">
-        <a class="book-btn" href="booking.html" aria-label="Book Photos and Videos">Book Photos and Videos</a>
-        <a class="ghost-btn" href="about.html" aria-label="About the Creator">About the Creator</a>
-      </div>
     </div>
   </main>
 
@@ -191,6 +194,28 @@
       },{rootMargin:'200px'});
       io.observe(tile);
     });
+
+    // Intro overlay: show on first visit per tab session
+    (function(){
+      const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const intro = document.getElementById('intro-overlay');
+      if (!intro) return;
+      const already = sessionStorage.getItem('fhc_intro_seen');
+      const showIntro = !already; // show once per session
+      if (!showIntro) { intro.remove(); return; }
+      // Show overlay immediately after DOM ready to avoid flash
+      const reveal = () => {
+        intro.classList.add('show');
+        const visibleMs = 1200; // how long text stays
+        const fadeMs = prefersReduced ? 0 : 800; // fade out duration
+        setTimeout(() => {
+          intro.classList.add('fade-out');
+          setTimeout(() => { intro.remove(); }, fadeMs + 50);
+          sessionStorage.setItem('fhc_intro_seen','1');
+        }, visibleMs);
+      };
+      if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', reveal); else reveal();
+    })();
 
     // Entry animation logic (trigger earlier)
     document.addEventListener('DOMContentLoaded', () => {
