@@ -197,11 +197,14 @@
       io.observe(tile);
     });
 
-  // Intro overlay: play on every full homepage load
+    // Intro overlay: show once per browser (persisted in localStorage)
     (function(){
       const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       const intro = document.getElementById('intro-overlay');
       if (!intro) return;
+      let skip = false;
+      try { skip = !!localStorage.getItem('fhc_intro_seen_v1'); } catch(_) {}
+      if (skip) { intro.remove(); return; }
       // Show overlay immediately after DOM ready to avoid flash
       const reveal = () => {
         document.body.classList.add('intro-lock');
@@ -214,6 +217,7 @@
             intro.remove();
             document.body.classList.remove('intro-lock');
       }, fadeMs + 50);
+          try { localStorage.setItem('fhc_intro_seen_v1','1'); } catch(_) {}
         }, visibleMs);
       };
       if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', reveal); else reveal();
