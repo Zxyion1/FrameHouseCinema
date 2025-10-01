@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Lighting | FrameHouseCinema</title>
+  <meta name="description" content="Lighting Portfolio - FrameHouseCinema">
+  <link rel="preload" href="style.css" as="style">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .gallery { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:18px; padding:2rem 0; max-width:1200px; margin:0 auto; }
+    .gallery-item { position:relative; overflow:hidden; border-radius:var(--radius); box-shadow:var(--shadow); cursor:pointer; transition:transform .2s; background:var(--card); }
+    .gallery-item img { width:100%; height:220px; object-fit:cover; transition:transform .4s, filter .4s; filter:brightness(.95) saturate(1.1); }
+    .gallery-item:hover img { transform:scale(1.07); filter:brightness(1.05) saturate(1.2); }
+    .gallery-item .caption { position:absolute; bottom:0; left:0; right:0; background:rgba(0,0,0,.55); color:#fff; padding:.6rem 1rem; font-size:1.05rem; opacity:0; transition:opacity .3s; }
+    .gallery-item:hover .caption { opacity:1; }
+    .hero-inner h1 { font-size:clamp(2rem,5vw,3rem); margin:0 0 .5rem; }
+  </style>
+</head>
+<body>
+  <header class="site-header animate-fade-up delay-100">
+    <div class="brand" style="display:flex;align-items:center;gap:1rem;">
+      <a href="index.html" style="display:flex;align-items:center;gap:.75rem;text-decoration:none;color:inherit;">
+        <img class="brand-logo" src="Media/logo/FrameHouseCinema Concept Logo 3.jpg?v=1" alt="FrameHouseCinema logo" loading="eager" fetchpriority="high" width="60" height="60" style="width:60px;height:60px;object-fit:contain;" />
+        <span class="brand-text">FrameHouseCinema</span>
+      </a>
+      <button class="book-btn" onclick="location.href='booking.html'">Book Photos and Videos</button>
+    </div>
+    <nav class="top-nav">
+      <a href="scenery.html">Scenery</a>
+      <a href="people.html">People</a>
+      <a href="lighting.html" aria-current="page">Lighting</a>
+      <a href="architecture.html">Architecture</a>
+      <a href="events.html">Events</a>
+      <a href="videos.html">Videos</a>
+    </nav>
+  </header>
+
+  <main class="hero animate-fade-up delay-200">
+    <div class="hero-slideshow"></div>
+    <div class="hero-inner">
+      <h1>Lighting</h1>
+      <p>Creative uses of light and shadow, highlighting mood, drama, and atmosphere in every shot.</p>
+    </div>
+  </main>
+
+  <section class="gallery animate-fade-up delay-300" aria-label="Lighting Gallery">
+    <div class="gallery-item">
+      <picture>
+        <img src="Media/lighting/IMG_0705.JPG" alt="Studio glow" loading="lazy" decoding="async">
+      </picture>
+    </div>
+    <div class="gallery-item">
+      <picture>
+        <img src="Media/lighting/IMG_3498.JPG" alt="Night city lights" loading="lazy" decoding="async">
+      </picture>
+      <div class="caption">Night city lights</div>
+    </div>
+    <div class="gallery-item">
+      <picture>
+        <img src="Media/lighting/IMG_3541.JPG" alt="Golden hour portrait" loading="lazy" decoding="async">
+      </picture>
+      <div class="caption">Golden hour portrait</div>
+    </div>
+  </section>
+
+  <footer class="site-footer animate-fade-up delay-400">
+    <div class="footer-grid">
+      <div class="footer-brand" style="display:flex;align-items:center;gap:.75rem;">
+  <img src="Media/logo/FrameHouseCinema Concept Logo 3.jpg?v=1" alt="FrameHouseCinema logo" width="54" height="54" style="width:54px;height:54px;object-fit:contain;" loading="lazy" decoding="async">
+  <strong class="brand-text" style="font-size:1rem;">FrameHouseCinema</strong>
+      </div>
+      <div class="contact" aria-labelledby="contact-heading">
+        <h3 id="contact-heading">Contact Info</h3>
+        <ul>
+          <li>Email: <a href="mailto:FrameHouseCinema@gmail.com">FrameHouseCinema@gmail.com</a></li>
+          <li>Phone: <a href="tel:+14199579645">+1 (419)-957-9645</a></li>
+          <li>Instagram: <a href="https://www.instagram.com/framehousecinema?igsh=MTAzMWEyZnh2cnpocA%3D%3D&utm_source=qr" target="_blank" rel="noopener noreferrer">instagram.com/framehousecinema</a></li>
+          <li>Location: Bowling Green, Ohio</li>
+        </ul>
+      </div>
+    </div>
+    <p class="tiny">&copy; <span id="year"></span> FrameHouseCinema. All rights reserved.</p>
+  </footer>
+
+  <script>
+    document.getElementById('year').textContent = new Date().getFullYear();
+    const deferWork = (fn)=>('requestIdleCallback' in window)?requestIdleCallback(fn,{timeout:1000}):setTimeout(fn,120);
+    deferWork(()=>{
+      const heroImages = [
+        "Media/lighting/IMG_0705.JPG",
+        "Media/lighting/IMG_3498.JPG",
+        "Media/lighting/IMG_3541.JPG"
+      ];
+      let heroIndex = 0;
+      const heroEl = document.querySelector('.hero-slideshow');
+      if (!heroEl) return;
+      heroEl.style.backgroundImage = `url('${heroImages[heroIndex]}')`;
+      setInterval(()=>{
+        heroIndex = (heroIndex + 1) % heroImages.length;
+        heroEl.style.backgroundImage = `url('${heroImages[heroIndex]}')`;
+      }, 3000);
+    });
+  </script>
+  <script>
+    (function(){
+      if(window.__fhcAnimInit) return; window.__fhcAnimInit=true;
+      document.addEventListener('DOMContentLoaded', () => {
+        document.body.classList.add('loaded');
+        const obs=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');obs.unobserve(e.target);}})},{threshold:.1,rootMargin:'0px 0px -60px'});
+        document.querySelectorAll('.animate-fade-up').forEach(el=>obs.observe(el));
+      });
+    })();
+  </script>
+  <script>
+    // Robust image fallback
+    document.addEventListener('DOMContentLoaded', () => {
+      const variants = (p) => {
+        if(!p) return [];
+        const outs = new Set();
+        const bases = [p,
+          p.replace('/Lighting/','/lighting/'),
+          p.replace('/lighting/','/Lighting/'),
+          p.replace(/^images\//,'Media/'),
+          p.replace(/^Media\//,'images/')
+        ];
+        bases.forEach(fp => {
+          outs.add(fp);
+          const m = fp.match(/\.(jpg|jpeg|png|webp|avif)$/i);
+          if(m){
+            const base = fp.slice(0, -m[1].length-1);
+            outs.add(base + '.' + m[1].toLowerCase());
+            outs.add(base + '.' + m[1].toUpperCase());
+          } else {
+            outs.add(fp + '.JPG'); outs.add(fp + '.jpg');
+          }
+        });
+        return Array.from(outs);
+      };
+      function tryLoad(urls){
+        return new Promise(resolve => {
+          const list = Array.from(urls); const tryNext=()=>{ if(!list.length) return resolve(null); const u=list.shift(); const im=new Image(); im.onload=()=>resolve(u); im.onerror=tryNext; im.src=u; }; tryNext();
+        });
+      }
+      (async function(){
+        const imgs = document.querySelectorAll('img');
+        for(const el of imgs){ const src = el.getAttribute('src'); if(!src) continue; const ok = await tryLoad(variants(src)); if(ok && ok!==src) el.src=ok; }
+      })();
+    });
+  </script>
+  <script src="js/perf.js" defer></script>
+  <script src="js/lightbox.js" defer></script>
+</body>
+</html>
+
+
+
+

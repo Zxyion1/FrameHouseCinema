@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="320" height="80" viewBox="0 0 320 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <title>FrameHouseCinema Logo (Dark)</title>
+  <defs>
+    <linearGradient id="panelDark" x1="0" y1="0" x2="320" y2="80" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0d1b24"/>
+      <stop offset="1" stop-color="#1e3442"/>
+    </linearGradient>
+    <linearGradient id="borderDark" x1="0" y1="0" x2="320" y2="0" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#3d8fe6"/>
+      <stop offset="1" stop-color="#88bdf7"/>
+    </linearGradient>
+    <linearGradient id="textGradDark" x1="40" y1="20" x2="280" y2="60" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#5fb4ff"/>
+      <stop offset="0.6" stop-color="#9cd3ff"/>
+      <stop offset="1" stop-color="#d0ecff"/>
+    </linearGradient>
+    <filter id="softGlowDark" x="-25%" y="-40%" width="150%" height="200%" color-interpolation-filters="sRGB">
+      <feGaussianBlur stdDeviation="7" result="b"/>
+      <feColorMatrix in="b" type="matrix" values="0 0 0 0 0.10  0 0 0 0 0.40  0 0 0 0 0.70  0 0 0 0.45 0" result="c"/>
+      <feBlend in="SourceGraphic" in2="c" mode="screen"/>
+    </filter>
+    <symbol id="monogramDark" viewBox="0 0 42 42">
+      <rect x="1" y="1" width="40" height="40" rx="9" fill="url(#panelDark)" stroke="url(#borderDark)" stroke-width="1.2"/>
+      <path d="M11 28V13h14v4H16v3h8v4h-8v4h-5Zm17 0V13h5v15h-5Zm5 0h6v4h-6v-4Zm-22 0h6v4h-6v-4Z" fill="url(#textGradDark)"/>
+    </symbol>
+  </defs>
+  <rect x="0.75" y="0.75" width="318.5" height="78.5" rx="14" fill="url(#panelDark)" stroke="url(#borderDark)" stroke-width="1.5"/>
+  <use href="#monogramDark" x="14" y="19" width="42" height="42"/>
+  <g filter="url(#softGlowDark)">
+    <text x="105" y="44" font-family="'Segoe UI',-apple-system,BlinkMacSystemFont,'Helvetica Neue',Arial,sans-serif" font-size="28" font-weight="600" fill="url(#textGradDark)" letter-spacing="0.5">FrameHouseCinema</text>
+    <text x="105" y="60" font-family="'Segoe UI',Arial,sans-serif" font-size="10" fill="#9cd3ff" letter-spacing="4" style="text-transform:uppercase;">film & photo</text>
+  </g>
+  <title>FrameHouseCinema – Dark Variant</title>
+  <desc>Dark themed logo variant for dark backgrounds.</desc>
+</svg>

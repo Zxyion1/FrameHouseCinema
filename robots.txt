@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://zxyion1.github.io/FrameHouseCinema/sitemap.xml

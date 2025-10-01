@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="96" height="96" viewBox="0 0 96 96" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <title>FrameHouseCinema Monogram</title>
+  <defs>
+    <linearGradient id="panelMon" x1="0" y1="0" x2="96" y2="96" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#e4eefb"/>
+      <stop offset="1" stop-color="#d4e4f4"/>
+    </linearGradient>
+    <linearGradient id="monoGrad" x1="12" y1="20" x2="84" y2="76" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#004d99"/>
+      <stop offset="0.5" stop-color="#0d6dc7"/>
+      <stop offset="1" stop-color="#3aa0ff"/>
+    </linearGradient>
+  </defs>
+  <rect x="2" y="2" width="92" height="92" rx="22" fill="url(#panelMon)" stroke="#88bdf7" stroke-width="3"/>
+  <path d="M26 66V30h32v8H34v6h20v8H34v14h-8Zm39 0V30h8v36h-8Zm8 0h10v8H73v-8Zm-47 0h10v8H26v-8Z" fill="url(#monoGrad)"/>
+</svg>

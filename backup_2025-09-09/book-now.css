@@ -1,0 +1,218 @@
+/* Book Now Page Styles */
+:root {
+    /* Use the same colors as the homepage */
+    --bg: #e4eefb;
+    --fg: #0a0a0a;
+    --muted: #6b7280;
+    --line: #cce0f5;
+    --card: #edf4fc;
+    --radius: 14px;
+    --shadow: 0 8px 30px rgba(128, 169, 238, 0.12);
+    --accent: #007aff;
+}
+
+.booking-container {
+    max-width: 800px;
+    margin: 2rem auto;
+    padding: 2rem;
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    border: 1px solid var(--line);
+}
+
+.booking-container h1 {
+    font-size: 2.5rem;
+    color: var(--fg);
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+.step {
+    display: none;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.3s ease;
+}
+
+.step.active {
+    display: block;
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.step h2 {
+    font-size: 1.8rem;
+    color: var(--fg);
+    margin-bottom: 1.5rem;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: var(--fg);
+    font-weight: 500;
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--bg);
+    color: var(--fg);
+    font-size: 1rem;
+    transition: all 0.2s ease;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px rgba(0, 122, 255, 0.1);
+}
+
+.map-container {
+    height: 300px;
+    margin: 1rem 0;
+    border-radius: var(--radius);
+    overflow: hidden;
+    border: 1px solid var(--line);
+}
+
+#map {
+    height: 100%;
+    width: 100%;
+}
+
+.button-group {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 2rem;
+}
+
+.next-button,
+.prev-button {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: var(--radius);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.next-button {
+    background: var(--accent);
+    color: white;
+}
+
+.next-button:hover {
+    background: #0066cc;
+}
+
+.next-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.prev-button {
+    background: var(--muted);
+    color: white;
+}
+
+.prev-button:hover {
+    background: #4b5563;
+}
+
+.time-slots {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 0.5rem;
+    margin: 1rem 0;
+}
+
+.time-slot {
+    padding: 0.5rem;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: var(--bg);
+}
+
+.time-slot:hover:not(.unavailable) {
+    background: var(--accent);
+    color: white;
+    border-color: var(--accent);
+}
+
+.time-slot.selected {
+    background: var(--accent);
+    color: white;
+    border-color: var(--accent);
+}
+
+.time-slot.unavailable {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: var(--line);
+}
+
+.error-message {
+    color: #ff4444;
+    margin-top: 0.5rem;
+    font-size: 0.9rem;
+}
+
+#distance-message {
+    margin-top: 0.5rem;
+    padding: 0.5rem;
+    border-radius: var(--radius);
+    font-size: 0.9rem;
+}
+
+#distance-message .error-message {
+    background: #ffe5e5;
+    padding: 0.5rem;
+    border-radius: var(--radius);
+}
+
+#card-element {
+    padding: 1rem;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--bg);
+}
+
+#card-errors {
+    margin-top: 0.5rem;
+    color: #ff4444;
+    font-size: 0.9rem;
+}
+
+@media (max-width: 640px) {
+    .booking-container {
+        margin: 1rem;
+        padding: 1rem;
+    }
+
+    .button-group {
+        flex-direction: column-reverse;
+        gap: 1rem;
+    }
+
+    .next-button,
+    .prev-button {
+        width: 100%;
+    }
+
+    .time-slots {
+        grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    }
+}

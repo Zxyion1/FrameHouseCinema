@@ -1,0 +1,360 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Admin • FrameHouseCinema</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .admin-shell{max-width:1200px;margin:2rem auto;padding:1rem}
+    .admin-toolbar{display:flex;gap:.75rem;align-items:center;justify-content:space-between;margin:1rem 0}
+    .admin-card{background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow)}
+    .admin-pad{padding:1rem}
+    table{width:100%;border-collapse:separate;border-spacing:0 8px}
+    th,td{padding:.65rem .9rem;background:#fff}
+    th{background:#f5f7fb;color:#334155;text-align:left}
+    tr{box-shadow:0 1px 3px rgba(0,0,0,.05)}
+    .btn{background:var(--accent);color:#fff;border:none;border-radius:10px;padding:.45rem .75rem;cursor:pointer}
+    .btn.red{background:#ef4444}
+    .row-actions{display:flex;gap:.5rem}
+    .tiny{color:#64748b}
+    .files{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+    .file-card{background:#fff;border:1px solid var(--line);border-radius:10px;padding:.5rem}
+    .pill{display:inline-block;font:600 .8rem/1.2 system-ui;background:#eef;color:#334;padding:.2rem .5rem;border-radius:999px}
+    input,select{padding:.45rem .6rem;border:1px solid var(--line);border-radius:10px}
+  </style>
+</head>
+<body class="loaded">
+  <!-- HEADER (theme) -->
+  <header class="site-header">
+    <div class="brand" style="display:flex;align-items:center;gap:1rem;">
+      <a href="index.html" style="display:flex;align-items:center;gap:.75rem;text-decoration:none;color:inherit;">
+        <img class="brand-logo" src="Media/logo/FrameHouseCinema Concept Logo 3.jpg?v=1" alt="FrameHouseCinema logo" loading="eager" width="56" height="56" style="width:56px;height:56px;object-fit:contain;" />
+        <span class="brand-text">FrameHouseCinema</span>
+      </a>
+    </div>
+    <nav class="top-nav">
+      <a href="scenery.html">Scenery</a>
+      <a href="people.html">People</a>
+      <a href="lighting.html">Lighting</a>
+      <a href="architecture.html">Architecture</a>
+      <a href="events.html">Events</a>
+      <a href="videos.html">Videos</a>
+      <a href="booking.html">Services</a>
+    </nav>
+  </header>
+
+  <main class="admin-shell" style="max-width:1400px;">
+    <div id="configWarn" style="display:none;margin:0 0 1rem;padding:.75rem 1rem;border:1px solid #f19900;background:#fff7e6;color:#8a4b00;border-radius:12px;font-size:.85rem;line-height:1.3">
+      Firebase config not set. Update <code>js/firebase-config.js</code> with your real project keys so bookings load.
+    </div>
+    <div class="admin-toolbar">
+      <div style="display:flex;flex-direction:column;gap:.25rem;min-width:260px">
+        <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap">
+          <button id="loginBtn" class="btn">Sign in</button>
+          <button id="logoutBtn" class="btn red" style="display:none">Sign out</button>
+          <span id="who" class="tiny" style="text-align:left"></span>
+        </div>
+      </div>
+      <div style="display:flex;gap:.5rem;flex-wrap:wrap;align-items:center">
+        <select id="statusFilter" title="Filter by status">
+          <option value="">All Statuses</option>
+          <option>new</option>
+          <option>confirmed</option>
+          <option>delivered</option>
+        </select>
+        <input id="searchInput" placeholder="Search name / email / code" style="min-width:240px" />
+        <button id="refreshAll" class="btn" style="background:#475569">Refresh</button>
+      </div>
+    </div>
+
+    <div class="admin-layout" style="display:grid;grid-template-columns: minmax(340px, 440px) 1fr;gap:1.25rem;align-items:start;">
+      <!-- LEFT: Bookings list -->
+      <section class="admin-card" style="padding:.5rem;display:flex;flex-direction:column;min-height:65vh;">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:.35rem .75rem .5rem">
+          <h3 style="margin:.25rem 0;font-size:1.05rem;letter-spacing:.5px">Bookings</h3>
+          <div class="tiny" id="count" style="margin:0"></div>
+        </div>
+        <div id="bookingList" style="overflow:auto;scrollbar-width:thin;flex:1;display:flex;flex-direction:column;gap:.5rem;padding:.25rem .35rem .75rem"></div>
+      </section>
+
+      <!-- RIGHT: Detail panel -->
+      <section class="admin-card" style="padding:0;min-height:65vh;display:flex;flex-direction:column;">
+        <div id="detailEmpty" style="padding:2.5rem 2rem;text-align:center;color:var(--muted);font-size:.95rem;">
+          <p style="margin:0 0 .5rem;font-weight:600">Select a booking</p>
+          <p style="margin:0;font-size:.8rem">Choose a client on the left to view / edit details and deliver files.</p>
+        </div>
+        <div id="detailPanel" style="display:none;">
+          <div style="padding:1rem 1.25rem;border-bottom:1px solid var(--line);display:flex;flex-wrap:wrap;gap:1rem;align-items:center;justify-content:space-between">
+            <div>
+              <h2 id="dName" style="margin:0;font-size:1.35rem;line-height:1.2"></h2>
+              <div class="tiny" id="dEmail" style="margin:.15rem 0 0;text-align:left"></div>
+              <div class="tiny" id="dPhone" style="margin:.15rem 0 0;text-align:left"></div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:.4rem;min-width:170px">
+              <label class="tiny" style="margin:0;text-align:left;font-size:.65rem;letter-spacing:.8px;text-transform:uppercase">Status</label>
+              <select id="dStatus"></select>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem;padding:1rem 1.25rem;border-bottom:1px solid var(--line);background:var(--card)">
+            <div>
+              <div class="tiny" style="margin:0 .1rem .15rem;text-align:left">Service</div>
+              <div id="dService" style="font-weight:600"></div>
+            </div>
+            <div>
+              <div class="tiny" style="margin:0 .1rem .15rem;text-align:left">Date / Time</div>
+              <div id="dDateTime" style="font-weight:600"></div>
+            </div>
+            <div>
+              <div class="tiny" style="margin:0 .1rem .15rem;text-align:left">Duration</div>
+              <div id="dDuration" style="font-weight:600"></div>
+            </div>
+            <div>
+              <div class="tiny" style="margin:0 .1rem .15rem;text-align:left">Total Price</div>
+              <div style="display:flex;gap:.4rem;align-items:center;">
+                <input id="dTotal" type="number" style="width:110px" />
+                <button id="saveTotal" class="btn" style="padding:.4rem .65rem;font-size:.75rem">Save</button>
+              </div>
+            </div>
+            <div>
+              <div class="tiny" style="margin:0 .1rem .15rem;text-align:left">Client Code</div>
+              <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap">
+                <span class="pill" id="dCode"></span>
+                <button id="copyCodeBtn" class="btn" style="padding:.4rem .65rem;font-size:.75rem">Copy</button>
+                <a id="openPortal2" target="_blank" class="btn" style="padding:.4rem .65rem;font-size:.75rem">Portal</a>
+              </div>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1.25rem;padding:1.25rem 1.25rem 0;flex:1;align-content:start">
+            <div style="display:flex;flex-direction:column;gap:.5rem">
+              <h3 style="margin:0;font-size:1rem;letter-spacing:.5px">Notes</h3>
+              <textarea id="dNotes" rows="8" placeholder="Internal notes / client requests" style="width:100%;padding:.75rem;resize:vertical;border:1px solid var(--line);border-radius:12px;background:#fff"></textarea>
+              <div style="display:flex;gap:.6rem;flex-wrap:wrap">
+                <button id="saveNotes" class="btn" style="padding:.55rem 1rem">Save Notes</button>
+                <div id="notesStatus" class="tiny" style="margin:0;text-align:left"></div>
+              </div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:.5rem">
+              <h3 style="margin:0;font-size:1rem;letter-spacing:.5px">Deliver Files</h3>
+              <div id="uploadZone" style="border:2px dashed var(--line);border-radius:16px;padding:1rem;min-height:140px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.75rem;background:linear-gradient(145deg,#f5f9fe,#ffffff);text-align:center;cursor:pointer">
+                <div class="tiny" style="margin:0;font-size:.7rem;letter-spacing:1px;text-transform:uppercase">Drop files or click</div>
+                <div style="font-size:.8rem;font-weight:600">Images / Video</div>
+                <input type="file" id="fileInput" multiple style="display:none" />
+                <button id="uploadBtn" class="btn" style="padding:.45rem .9rem">Upload</button>
+              </div>
+              <div id="progress" class="tiny" style="margin:0;text-align:left"></div>
+              <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+                <button id="refreshFiles" class="ghost-btn" style="padding:.4rem .75rem;font-size:.75rem">Refresh</button>
+              </div>
+              <div id="files" class="files" style="margin-top:.5rem"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer class="site-footer"><p class="tiny">© <span id="year"></span> FrameHouseCinema</p></footer>
+
+  <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script src="js/perf.js" defer></script>
+  <script>
+    // Init
+    try {
+      if(!window.firebaseConfig){ console.error('firebaseConfig missing. Check js/firebase-config.js path.'); }
+      if(firebase.apps?.length){
+        // already initialized elsewhere
+      } else {
+        firebase.initializeApp(window.firebaseConfig);
+      }
+    } catch(err){ console.error('Firebase init failed', err); }
+    (function(){
+      const cfg = window.firebaseConfig||{};
+      if(cfg.apiKey==='YOUR_API_KEY'||!cfg.apiKey){
+        const w=document.getElementById('configWarn'); if(w) w.style.display='block';
+      }
+    })();
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+    const storage = firebase.storage();
+    const who = document.getElementById('who');
+    const loginBtn = document.getElementById('loginBtn');
+    const logoutBtn = document.getElementById('logoutBtn');
+    const statusFilter = document.getElementById('statusFilter');
+    const searchInput = document.getElementById('searchInput');
+    const refreshAll = document.getElementById('refreshAll');
+    const listEl = document.getElementById('bookingList');
+    const countEl = document.getElementById('count');
+
+    // Detail elements
+    const detailPanel = document.getElementById('detailPanel');
+    const detailEmpty = document.getElementById('detailEmpty');
+    const dName = document.getElementById('dName');
+    const dEmail = document.getElementById('dEmail');
+    const dPhone = document.getElementById('dPhone');
+    const dService = document.getElementById('dService');
+    const dDateTime = document.getElementById('dDateTime');
+    const dDuration = document.getElementById('dDuration');
+    const dCode = document.getElementById('dCode');
+    const dStatus = document.getElementById('dStatus');
+    const dNotes = document.getElementById('dNotes');
+    const saveNotes = document.getElementById('saveNotes');
+    const notesStatus = document.getElementById('notesStatus');
+    const dTotal = document.getElementById('dTotal');
+    const saveTotal = document.getElementById('saveTotal');
+    const copyCodeBtn = document.getElementById('copyCodeBtn');
+    const openPortal2 = document.getElementById('openPortal2');
+
+    // Files
+    const uploadZone = document.getElementById('uploadZone');
+    const fileInput = document.getElementById('fileInput');
+    const uploadBtn = document.getElementById('uploadBtn');
+    const refreshFiles = document.getElementById('refreshFiles');
+    const filesEl = document.getElementById('files');
+    const progressEl = document.getElementById('progress');
+
+    let currentDocId = null; // Firestore document id
+    let currentData = null;  // cached booking data
+
+    function bookingCard(d, id){
+      return `<button class="booking-item" data-id="${id}" style="text-align:left;display:flex;flex-direction:column;gap:.35rem;background:#fff;border:1px solid var(--line);border-radius:14px;padding:.75rem .85rem;cursor:pointer;transition:all .2s;position:relative">
+        <span style="font-weight:600;font-size:.95rem;line-height:1.2">${d.name||'—'} <span style="font-weight:400;color:var(--muted);font-size:.75rem">${d.clientCode||''}</span></span>
+        <span class="tiny" style="margin:0;text-align:left;font-size:.65rem;display:flex;gap:.6rem;flex-wrap:wrap">
+          <span>${d.service||'Service'}</span>
+          <span>${d.date||'?'} ${d.time||''}</span>
+          <span>$${d.totalPrice||'0'}</span>
+        </span>
+        <span class="status-dot" data-status="${d.status||'new'}" style="position:absolute;top:8px;right:8px;width:10px;height:10px;border-radius:50%;background:${d.status==='delivered'?'#16a34a':d.status==='confirmed'?'#f59e0b':'#64748b'}"></span>
+      </button>`;
+    }
+
+    async function listFiles(code){
+      filesEl.innerHTML = '<div class="tiny">Loading...</div>';
+      try{
+        const listRef = storage.ref('deliveries/'+code+'/');
+        const res = await listRef.listAll();
+        if(!res.items.length){ filesEl.innerHTML='<div class="tiny">No files yet.</div>'; return; }
+        filesEl.innerHTML='';
+        for(const item of res.items){
+          const url = await item.getDownloadURL();
+          const name = item.name;
+          const card = document.createElement('div');
+            card.className='file-card';
+          if(/\.(mp4|mov|webm)$/i.test(name)){
+            card.innerHTML = `<video src="${url}" controls style="width:100%;height:180px;object-fit:cover;border-radius:8px"></video><div class=\"tiny\">${name}</div>`;
+          } else {
+            card.innerHTML = `<img src="${url}" alt="${name}" loading="lazy" style="width:100%;height:180px;object-fit:cover;border-radius:8px"/><div class=\"tiny\">${name}</div>`;
+          }
+          filesEl.appendChild(card);
+        }
+      }catch(e){ filesEl.innerHTML='<div class="tiny">Unable to list files.</div>'; }
+    }
+
+    async function uploadFiles(){
+      if(!currentData) return;
+      const files = fileInput.files; if(!files || !files.length) return;
+      progressEl.textContent='Uploading...';
+      for(const f of files){
+        const ref = storage.ref('deliveries/'+currentData.clientCode+'/'+f.name);
+        await ref.put(f);
+      }
+      progressEl.textContent='Upload complete.';
+      await listFiles(currentData.clientCode);
+      fileInput.value='';
+    }
+
+    function clearDetail(){
+      currentDocId=null; currentData=null;
+      detailPanel.style.display='none';
+      detailEmpty.style.display='block';
+    }
+
+    function populateDetail(id, d){
+      currentDocId = id; currentData = d;
+      detailEmpty.style.display='none';
+      detailPanel.style.display='block';
+      dName.textContent = d.name||'—';
+      dEmail.textContent = d.email||''; dPhone.textContent = d.phone||'';
+      dService.textContent = d.service||'—';
+      dDateTime.textContent = (d.date||'') + (d.time?(' @ '+d.time):'');
+      dDuration.textContent = (d.duration||'') + 'h';
+      dCode.textContent = d.clientCode||'';
+      dTotal.value = d.totalPrice||0;
+      dNotes.value = d.notes||'';
+      openPortal2.href = 'client.html?code=' + encodeURIComponent(d.clientCode||'');
+      // status select options
+      dStatus.innerHTML = ['new','confirmed','delivered'].map(s=>`<option ${d.status===s?'selected':''}>${s}</option>`).join('');
+      listFiles(d.clientCode);
+    }
+
+    async function load(){
+      listEl.innerHTML='<div class="tiny" style="margin:1rem 0">Loading...</div>';
+      let q = db.collection('bookings').orderBy('createdAt','desc');
+      const s = statusFilter.value; if(s) q = q.where('status','==',s);
+      const snap = await q.get();
+      const term = (searchInput.value||'').toLowerCase();
+      const frags=[]; let firstId=null, firstData=null; let total=0;
+      snap.forEach(doc=>{
+        const d = doc.data();
+        const hay = `${d.name||''} ${d.email||''} ${d.clientCode||''}`.toLowerCase();
+        if(term && !hay.includes(term)) return;
+        total++;
+        if(!firstId){ firstId=doc.id; firstData=d; }
+        frags.push(bookingCard(d, doc.id));
+      });
+      countEl.textContent = total + ' shown';
+      listEl.innerHTML = frags.length?frags.join(''):'<div class="tiny" style="margin:1rem 0">No results.</div>';
+      if(firstId){ populateDetail(firstId, firstData); }
+      else { clearDetail(); }
+    }
+
+    loginBtn.onclick = async ()=>{ const p = new firebase.auth.GoogleAuthProvider(); await auth.signInWithPopup(p); };
+    logoutBtn.onclick = ()=> auth.signOut();
+
+    auth.onAuthStateChanged(user=>{
+      const allowed = user && window.fhcAdminEmails?.includes(user.email);
+      if(allowed){
+        who.textContent = 'Signed in as '+user.email; loginBtn.style.display='none'; logoutBtn.style.display='inline-flex'; load();
+      } else {
+        who.textContent = user ? ('Access denied for '+user.email) : 'Sign in to view bookings.';
+        loginBtn.style.display='inline-flex'; logoutBtn.style.display='none';
+        listEl.innerHTML=''; clearDetail();
+      }
+    });
+
+    statusFilter.onchange = load;
+    refreshAll.onclick = load;
+    searchInput.oninput = ()=>{ clearTimeout(window.__t); window.__t=setTimeout(load,220); };
+
+    listEl.addEventListener('click', e=>{
+      const btn = e.target.closest('.booking-item'); if(!btn) return;
+      const id = btn.getAttribute('data-id');
+      // fetch doc again (could optimize by storing data set earlier)
+      db.collection('bookings').doc(id).get().then(doc=>{ if(doc.exists) populateDetail(doc.id, doc.data()); });
+    });
+
+    dStatus.onchange = async ()=>{ if(!currentDocId) return; await db.collection('bookings').doc(currentDocId).update({ status: dStatus.value }); };
+    saveNotes.onclick = async ()=>{ if(!currentDocId) return; notesStatus.textContent='Saving...'; await db.collection('bookings').doc(currentDocId).update({ notes: dNotes.value }); notesStatus.textContent='Saved'; setTimeout(()=>notesStatus.textContent='',1300); };
+    saveTotal.onclick = async ()=>{ if(!currentDocId) return; saveTotal.disabled=true; await db.collection('bookings').doc(currentDocId).update({ totalPrice: parseFloat(dTotal.value||0) }); saveTotal.textContent='Saved'; setTimeout(()=>{saveTotal.textContent='Save'; saveTotal.disabled=false;},1200); };
+    copyCodeBtn.onclick = async ()=>{ if(!currentData?.clientCode) return; await navigator.clipboard.writeText(currentData.clientCode); copyCodeBtn.textContent='Copied'; setTimeout(()=>copyCodeBtn.textContent='Copy',1100); };
+
+    // Upload interactions
+    uploadZone.addEventListener('click', ()=> fileInput.click());
+    uploadZone.addEventListener('dragover', e=>{ e.preventDefault(); uploadZone.style.background='#f0f7ff'; });
+    uploadZone.addEventListener('dragleave', ()=> uploadZone.style.background='linear-gradient(145deg,#f5f9fe,#ffffff)');
+    uploadZone.addEventListener('drop', e=>{ e.preventDefault(); uploadZone.style.background='linear-gradient(145deg,#f5f9fe,#ffffff)'; if(e.dataTransfer.files?.length){ fileInput.files = e.dataTransfer.files; }});
+    uploadBtn.onclick = uploadFiles;
+    refreshFiles.onclick = ()=> currentData && listFiles(currentData.clientCode);
+    // Fallback: ensure body visible even if perf.js didn't add loaded class
+    window.addEventListener('DOMContentLoaded',()=>{ document.body.classList.add('loaded'); });
+  </script>
+</body>
+</html>
+
+
+
