@@ -653,3 +653,6 @@ body.loaded { opacity: 1; }
 .suggestion-item:hover {
   background: #f3f4f6;
 }
+.suggestion-item.active {
+  background: #e6f0ff;
+}

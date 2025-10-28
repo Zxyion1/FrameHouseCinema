@@ -52,6 +52,7 @@ function initMap() {
 
     // Debounced search using Nominatim
     let debounceTimer = null;
+    let suggestionIndex = -1;
     input.addEventListener('input', (e) => {
         const q = e.target.value.trim();
         suggestions.innerHTML = '';
@@ -65,6 +66,8 @@ function initMap() {
                 .then(results => {
                     suggestions.innerHTML = '';
                     if (!results || results.length === 0) { suggestions.style.display = 'none'; return; }
+                    // Populate suggestions and reset keyboard index
+                    suggestionIndex = -1;
                     results.forEach(r => {
                         const item = document.createElement('div');
                         item.className = 'suggestion-item';
@@ -72,12 +75,44 @@ function initMap() {
                         item.dataset.lat = r.lat;
                         item.dataset.lon = r.lon;
                         item.addEventListener('click', () => {
-                            setLocation(parseFloat(r.lat), parseFloat(r.lon), r.display_name);
+                            setLocation(parseFloat(item.dataset.lat), parseFloat(item.dataset.lon), item.textContent);
                             suggestions.innerHTML = '';
                             suggestions.style.display = 'none';
                         });
                         suggestions.appendChild(item);
                     });
+                    // keyboard support: highlight/unhighlight helpers
+                    function highlightSuggestion(idx){
+                        const items = suggestions.querySelectorAll('.suggestion-item');
+                        items.forEach((it,i)=> it.classList.toggle('active', i===idx));
+                    }
+                    // handle key navigation on the input
+                    input.onkeydown = function(ev){
+                        const items = suggestions.querySelectorAll('.suggestion-item');
+                        if (!items || items.length === 0) return;
+                        if (ev.key === 'ArrowDown') {
+                            ev.preventDefault();
+                            suggestionIndex = Math.min(items.length - 1, suggestionIndex + 1);
+                            highlightSuggestion(suggestionIndex);
+                            items[suggestionIndex].scrollIntoView({block: 'nearest'});
+                        } else if (ev.key === 'ArrowUp') {
+                            ev.preventDefault();
+                            suggestionIndex = Math.max(0, suggestionIndex - 1);
+                            highlightSuggestion(suggestionIndex);
+                            items[suggestionIndex].scrollIntoView({block: 'nearest'});
+                        } else if (ev.key === 'Enter') {
+                            ev.preventDefault();
+                            if (suggestionIndex >= 0 && items[suggestionIndex]) {
+                                const it = items[suggestionIndex];
+                                setLocation(parseFloat(it.dataset.lat), parseFloat(it.dataset.lon), it.textContent);
+                                suggestions.innerHTML = '';
+                                suggestions.style.display = 'none';
+                            }
+                        } else if (ev.key === 'Escape') {
+                            suggestions.innerHTML = '';
+                            suggestions.style.display = 'none';
+                        }
+                    };
                     suggestions.style.display = 'block';
                 })
                 .catch(err => console.error('Nominatim error', err));
