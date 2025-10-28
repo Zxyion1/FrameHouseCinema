@@ -14,54 +14,79 @@ const CONFIG = {
 // Store for bookings
 let bookings = [];
 
-// Initialize Google Maps
+// Initialize map using Leaflet + Nominatim (OpenStreetMap)
 function initMap() {
-    const map = new google.maps.Map(document.getElementById('map'), {
-        center: CONFIG.BUSINESS_LOCATION,
-        zoom: 8
+    // Create the Leaflet map
+    const map = L.map('map').setView([CONFIG.BUSINESS_LOCATION.lat, CONFIG.BUSINESS_LOCATION.lng], 10);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    // Add base marker for business location
+    L.marker([CONFIG.BUSINESS_LOCATION.lat, CONFIG.BUSINESS_LOCATION.lng]).addTo(map).bindPopup('FrameHouseCinema base');
+
+    let marker = null;
+    const input = document.getElementById('location');
+    const suggestions = document.getElementById('location-suggestions');
+    const nextButton = document.querySelector('#step3 .next-button');
+    const messageElement = document.getElementById('distance-message');
+
+    function setLocation(lat, lng, displayName) {
+        if (marker) {
+            marker.setLatLng([lat, lng]);
+        } else {
+            marker = L.marker([lat, lng]).addTo(map);
+        }
+        map.setView([lat, lng], 12);
+        if (displayName) input.value = displayName;
+
+        const distance = calculateDistance(CONFIG.BUSINESS_LOCATION, { lat, lng });
+        if (distance > CONFIG.MAX_TRAVEL_DISTANCE) {
+            messageElement.innerHTML = `<div class="error-message">This location is outside our service area. We serve within ${CONFIG.MAX_TRAVEL_DISTANCE}km of Bowling Green, OH.</div>`;
+            if (nextButton) nextButton.disabled = true;
+        } else {
+            messageElement.innerHTML = `<div style="color: var(--accent);">Location is within our service area (${Math.round(distance)}km from Bowling Green)</div>`;
+            if (nextButton) nextButton.disabled = false;
+        }
+    }
+
+    // Debounced search using Nominatim
+    let debounceTimer = null;
+    input.addEventListener('input', (e) => {
+        const q = e.target.value.trim();
+        suggestions.innerHTML = '';
+        suggestions.style.display = 'none';
+        if (debounceTimer) clearTimeout(debounceTimer);
+        if (!q) return;
+        debounceTimer = setTimeout(() => {
+            const url = `https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&limit=6&q=${encodeURIComponent(q)}`;
+            fetch(url)
+                .then(r => r.json())
+                .then(results => {
+                    suggestions.innerHTML = '';
+                    if (!results || results.length === 0) { suggestions.style.display = 'none'; return; }
+                    results.forEach(r => {
+                        const item = document.createElement('div');
+                        item.className = 'suggestion-item';
+                        item.textContent = r.display_name;
+                        item.dataset.lat = r.lat;
+                        item.dataset.lon = r.lon;
+                        item.addEventListener('click', () => {
+                            setLocation(parseFloat(r.lat), parseFloat(r.lon), r.display_name);
+                            suggestions.innerHTML = '';
+                            suggestions.style.display = 'none';
+                        });
+                        suggestions.appendChild(item);
+                    });
+                    suggestions.style.display = 'block';
+                })
+                .catch(err => console.error('Nominatim error', err));
+        }, 350);
     });
 
-    // Add autocomplete to location input
-    const input = document.getElementById('location');
-    const autocomplete = new google.maps.places.Autocomplete(input);
-    
-    autocomplete.addListener('place_changed', function() {
-        const place = autocomplete.getPlace();
-        if (!place.geometry) {
-            return;
-        }
-
-        // Check if location is within range
-        const distance = calculateDistance(
-            CONFIG.BUSINESS_LOCATION,
-            {
-                lat: place.geometry.location.lat(),
-                lng: place.geometry.location.lng()
-            }
-        );
-
-        const messageElement = document.getElementById('distance-message');
-        const nextButton = document.querySelector('#step3 .next-button');
-
-        if (distance > CONFIG.MAX_TRAVEL_DISTANCE) {
-            messageElement.innerHTML = `
-                <div class="error-message">
-                    This location is outside our service area. We serve within 250km of Bowling Green, OH.
-                </div>
-            `;
-            nextButton.disabled = true;
-        } else {
-            messageElement.innerHTML = `
-                <div style="color: var(--accent);">
-                    Location is within our service area (${Math.round(distance)}km from Bowling Green)
-                </div>
-            `;
-            nextButton.disabled = false;
-        }
-
-        // Update map
-        map.setCenter(place.geometry.location);
-        map.setZoom(12);
+    // Click on map to set location
+    map.on('click', function(e) {
+        setLocation(e.latlng.lat, e.latlng.lng);
     });
 }
 
@@ -210,11 +235,11 @@ function generateTimeSlots(dateStr) {
 
 // Initialize all form functionality
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize the map
-    if (typeof google !== 'undefined') {
+    // Initialize the map (Leaflet)
+    try {
         initMap();
-    } else {
-        console.error('Google Maps not loaded');
+    } catch (e) {
+        console.error('Map initialization failed', e);
     }
 
     // Set date picker options

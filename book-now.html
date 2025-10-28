@@ -11,7 +11,10 @@
   <!-- JavaScript Dependencies -->
   <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
   <script src="https://js.stripe.com/v3/"></script>
-  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA-test-key-for-development&libraries=places&callback=initMap" async defer></script>
+  <!-- Leaflet (OpenStreetMap) for location selection -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-sA+e2t8kGg6p6h8s3p3kQw5qGQwKQXrY3o2qjvQfH8o=" crossorigin=""/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-o9N1j7gk6w6u8fYvQn0tqvQmK0Z6m5Zg1b1h5g5d4eg=" crossorigin=""></script>
+  <!-- Optional: simple Leaflet geocoder UI (we use Nominatim via fetch in JS) -->
   <script src="js/navigation.js"></script>
   <script src="js/booking.js"></script>
   <script src="js/service-selection.js"></script>
@@ -1142,6 +1145,20 @@
       }
     }
   </script>
+  <script>
+    // Called when user clicks a service option button
+    function selectService(name){
+      const input = document.getElementById('service-type');
+      if(input) input.value = name;
+      // visually mark selected
+      document.querySelectorAll('#service-options .service-type-btn').forEach(b=>{
+        if(b.textContent === name) b.classList.add('selected'); else b.classList.remove('selected');
+      });
+      // store for later steps
+      const details = JSON.parse(sessionStorage.getItem('bookingDetails')||'{}');
+      details.service = name; sessionStorage.setItem('bookingDetails', JSON.stringify(details));
+    }
+  </script>
 </head>
 <body>
   <!-- HEADER -->
@@ -1179,6 +1196,17 @@
         <input type="text" id="service-type" readonly>
       </div>
       <div class="form-group">
+        <label>Choose a service</label>
+        <div id="service-options" class="service-options" style="display:flex;gap:.5rem;flex-wrap:wrap;">
+          <button type="button" class="service-type-btn" onclick="selectService('Wedding Video Package')">Wedding Video Package</button>
+          <button type="button" class="service-type-btn" onclick="selectService('Commercial/Business')">Commercial/Business</button>
+          <button type="button" class="service-type-btn" onclick="selectService('Short Film Production')">Short Film Production</button>
+          <button type="button" class="service-type-btn" onclick="selectService('Wedding Photography')">Wedding Photography</button>
+          <button type="button" class="service-type-btn" onclick="selectService('Portrait Sessions')">Portrait Sessions</button>
+          <button type="button" class="service-type-btn" onclick="selectService('Event Photography')">Event Photography</button>
+        </div>
+      </div>
+      <div class="form-group">
         <label for="special-requests">Special Requests or Notes</label>
         <textarea id="special-requests" rows="4" placeholder="Tell us about any specific requirements..."></textarea>
       </div>
@@ -1201,6 +1229,10 @@
       
       <!-- Time Slots Section -->
       <div id="time-slots-section" class="booking-section time-slots-section">
+        <div id="datetime-summary" style="display:none;margin-bottom:1rem;padding:0.8rem;border-radius:12px;border:1px solid var(--line);background: #fff;">
+          <div id="datetime-summary-text" style="font-weight:600;color:var(--fg);"></div>
+          <div style="margin-top:.5rem;"><button type="button" class="change-service-btn" onclick="editDatetime()">Edit</button></div>
+        </div>
         <h3 class="section-title">Select a Time</h3>
         <div id="time-slots" class="time-slots-grid">
           <!-- Time slots will be dynamically inserted here -->
@@ -1229,8 +1261,9 @@
       <div class="form-group">
         <label for="location">Event Location</label>
         <input type="text" id="location" placeholder="Enter the address">
+        <div id="location-suggestions" class="suggestions" style="display:none;"></div>
       </div>
-      <div id="map"></div>
+      <div id="map" style="height:360px;border-radius:8px;border:1px solid var(--line);margin-top:0.75rem;"></div>
       <div id="distance-message"></div>
       <button class="next-button" onclick="nextStep(4)">Next: Payment</button>
     </div>
@@ -1275,104 +1308,82 @@
     const card = elements.create('card');
     card.mount('#card-element');
 
-    // Navigation functions
-    function goToStep(step) {
-        // Hide all steps
-        document.querySelectorAll('.booking-step').forEach(el => {
-            el.style.display = 'none';
-        });
-        
-        // Show target step
-        document.getElementById('step' + step).style.display = 'block';
-        
-        // Update progress bar
-        document.querySelectorAll('.progress-step').forEach((el, index) => {
-            if (index < step) {
-                el.classList.add('active');
-            } else {
-                el.classList.remove('active');
-            }
-        });
+  // Navigation functions
+  function goToStep(step) {
+    // Hide all steps
+    document.querySelectorAll('.booking-step').forEach(el => el.style.display = 'none');
 
-        // If moving to step 2, initialize booking components
-        if (step === 2) {
-            const serviceType = document.getElementById('service-type').value;
-            if (serviceType) {
-                // Reset any existing selections
-                sessionStorage.removeItem('bookingDetails');
-                document.querySelectorAll('.time-slot.selected').forEach(slot => {
-                    slot.classList.remove('selected');
-                });
-                
-                // Initialize calendar with flatpickr
-                const calendar = flatpickr("#booking-date", {
-                    enableTime: false,
-                    dateFormat: "Y-m-d",
-                    minDate: "today",
-                    disable: [
-                        function(date) {
-                            // Disable Sundays
-                            return date.getDay() === 0;
-                        }
-                    ],
-                    onChange: function(selectedDates) {
-                        const date = selectedDates[0];
-                        if (date) {
-                            document.getElementById('time-slots-section').style.display = 'block';
-                            // Reset any previously selected time
-                            document.querySelectorAll('.time-slot.selected').forEach(slot => {
-                                slot.classList.remove('selected');
-                            });
-                            updateConfirmButton();
-                        }
-                    }
-                });
-                
-                // Create time slots
-                const timeSlots = [
-                    "10:00 AM", "11:00 AM", "12:00 PM",
-                    "1:00 PM", "2:00 PM", "3:00 PM",
-                    "4:00 PM", "5:00 PM", "6:00 PM",
-                    "7:00 PM", "8:00 PM"
-                ];
+    // Show target step
+    const target = document.getElementById('step' + step);
+    if (target) target.style.display = 'block';
 
-                const timeSlotsContainer = document.getElementById('time-slots');
-                if (timeSlotsContainer) {
-                    // Clear existing slots
-                    timeSlotsContainer.innerHTML = '';
-                    
-                    timeSlots.forEach(time => {
-                        const slot = document.createElement('button');
-                        slot.className = 'time-slot';
-                        slot.textContent = time;
-                        slot.onclick = function() {
-                            // Remove selection from all slots
-                            document.querySelectorAll('.time-slot').forEach(s => {
-                                s.classList.remove('selected');
-                            });
-                            // Add selection to clicked slot
-                            this.classList.add('selected');
-                            updateConfirmButton();
-                        };
-                        timeSlotsContainer.appendChild(slot);
-                    });
-                }
-                
-                // Set up duration selector
-                const durationContainer = document.getElementById('duration-container');
-                if (durationContainer) {
-                    durationContainer.innerHTML = `
-                        <select id="duration-select" class="duration-selector" onchange="updateBookingPrice()">
-                            <option value="1">1 Hour</option>
-                            <option value="2">2 Hours</option>
-                            <option value="4">4 Hours</option>
-                            <option value="6">6 Hours</option>
-                            <option value="8">8 Hours</option>
-                        </select>
-                    `;
-                }
-            }
+    // Update progress bar
+    document.querySelectorAll('.progress-step').forEach((el, index) => {
+      if (index < step) el.classList.add('active'); else el.classList.remove('active');
+    });
+
+    // If moving to step 2, initialize booking components
+    if (step === 2) {
+      // Reset any prior temporary booking details
+      sessionStorage.removeItem('bookingDetails');
+      document.querySelectorAll('.time-slot.selected').forEach(slot => slot.classList.remove('selected'));
+
+      // Initialize calendar with flatpickr
+      const calendar = flatpickr("#booking-date", {
+        enableTime: false,
+        dateFormat: "Y-m-d",
+        minDate: "today",
+        disable: [function(date) { return date.getDay() === 0; }], // Disable Sundays
+        onChange: function(selectedDates) {
+          const date = selectedDates[0];
+          if (date) {
+            document.getElementById('time-slots-section').style.display = 'block';
+            document.querySelectorAll('.time-slot.selected').forEach(slot => slot.classList.remove('selected'));
+            updateConfirmButton();
+          }
         }
+      });
+
+      // Create time slots
+      const timeSlots = ["10:00 AM","11:00 AM","12:00 PM","1:00 PM","2:00 PM","3:00 PM","4:00 PM","5:00 PM","6:00 PM","7:00 PM","8:00 PM"];
+      const timeSlotsContainer = document.getElementById('time-slots');
+      if (timeSlotsContainer) {
+        timeSlotsContainer.innerHTML = '';
+        timeSlots.forEach(time => {
+          const slot = document.createElement('button');
+          slot.className = 'time-slot';
+          slot.textContent = time;
+          slot.addEventListener('click', function() {
+            document.querySelectorAll('.time-slot').forEach(s => s.classList.remove('selected'));
+            this.classList.add('selected');
+            updateConfirmButton();
+          });
+          timeSlotsContainer.appendChild(slot);
+        });
+      }
+
+      // Set up duration selector
+      const durationContainer = document.getElementById('duration-container');
+      if (durationContainer) {
+        durationContainer.innerHTML = `\
+          <select id="duration-select" class="duration-selector">\
+            <option value="1">1 Hour</option>\
+            <option value="2">2 Hours</option>\
+            <option value="4">4 Hours</option>\
+            <option value="6">6 Hours</option>\
+            <option value="8">8 Hours</option>\
+          </select>`;
+        // hide price until duration selected
+        const priceDisplayInit = document.getElementById('price-display');
+        if (priceDisplayInit) priceDisplayInit.style.display = 'none';
+        // wire duration change
+        const sel = document.getElementById('duration-select');
+        if (sel) {
+          sel.addEventListener('change', function(){ updateBookingPrice(); updateConfirmButton(); });
+        }
+        // initialize price (if any)
+        setTimeout(()=>{ if(document.getElementById('duration-select')) updateBookingPrice(); },50);
+      }
     }
 
     function prevStep(currentStep) {
@@ -1388,15 +1399,28 @@
             const hasDuration = document.getElementById('duration-select')?.value;
             
             // Only enable if we have all required selections
-            confirmBtn.disabled = !(hasDate && hasTime && hasDuration);
+          confirmBtn.disabled = !(hasDate && hasTime && hasDuration);
             
             // Clear any existing click handlers
             confirmBtn.removeEventListener('click', handleConfirmClick);
             
-            // Add click handler if all selections are made
-            if (!confirmBtn.disabled) {
-                confirmBtn.addEventListener('click', handleConfirmClick);
-            }
+      // Add click handler if all selections are made
+      if (!confirmBtn.disabled) {
+        confirmBtn.addEventListener('click', handleConfirmClick);
+      }
+
+      // If everything is selected, auto-show the compact summary (don't auto-advance)
+      const summaryEl = document.getElementById('datetime-summary');
+      if (hasDate && hasTime && hasDuration && summaryEl && summaryEl.style.display !== 'block') {
+        const bookingDetails = {
+          date: document.querySelector('.flatpickr-input').value,
+          time: document.querySelector('.time-slot.selected').textContent,
+          duration: parseInt(document.getElementById('duration-select').value),
+          totalPrice: calculateTotalPrice(document.getElementById('duration-select').value)
+        };
+        // Show summary UI
+        showDatetimeSummary(bookingDetails);
+      }
         }
     }
     
@@ -1421,23 +1445,61 @@
             
             sessionStorage.setItem('bookingDetails', JSON.stringify(bookingDetails));
             
-            // Visual confirmation
-            confirmBtn.textContent = '✓ Selection Confirmed';
-            confirmBtn.style.background = '#15803d';
-            
-            // Enable next step after a short delay
-            setTimeout(() => {
-                confirmBtn.style.display = 'none';
-                nextBtn.style.display = 'block';
-                nextBtn.disabled = false;
-                
-                // Auto-advance to next step
-                setTimeout(() => {
-                    goToStep(3);
-                }, 500);
-            }, 1000);
+      // Visual confirmation
+      confirmBtn.textContent = '✓ Selection Confirmed';
+      confirmBtn.style.background = '#15803d';
+
+      // Collapse the calendar/time UI and show a compact summary
+      const timeSection = document.getElementById('time-slots-section');
+      const dateInput = document.getElementById('booking-date');
+      const summaryEl = document.getElementById('datetime-summary');
+      const summaryText = document.getElementById('datetime-summary-text');
+      if (summaryText) {
+        summaryText.textContent = `${bookingDetails.date} • ${bookingDetails.time} • ${bookingDetails.duration}h — $${bookingDetails.totalPrice}`;
+      }
+      if (timeSection && summaryEl) {
+        timeSection.style.display = 'none';
+        summaryEl.style.display = 'block';
+      }
+
+      // Enable next step button (do not auto-advance)
+      setTimeout(() => {
+        confirmBtn.style.display = 'none';
+        nextBtn.style.display = 'block';
+        nextBtn.disabled = false;
+      }, 600);
         }
     }
+
+  // Allow users to re-open the date/time selection for editing
+  function editDatetime(){
+    const timeSection = document.getElementById('time-slots-section');
+    const summaryEl = document.getElementById('datetime-summary');
+    const confirmBtn = document.getElementById('confirm-datetime-btn');
+    const nextBtn = document.querySelector('#step2 .next-button');
+    if (summaryEl) summaryEl.style.display = 'none';
+    if (timeSection) timeSection.style.display = 'block';
+    if (confirmBtn) { confirmBtn.style.display = 'inline-block'; confirmBtn.disabled = false; confirmBtn.textContent = 'Confirm Selection'; confirmBtn.style.background=''; }
+    if (nextBtn) { nextBtn.style.display = 'none'; }
+  }
+
+  // Show a compact datetime summary (used when date/time/duration are selected)
+  function showDatetimeSummary(details){
+    if(!details) return;
+    const summaryEl = document.getElementById('datetime-summary');
+    const summaryText = document.getElementById('datetime-summary-text');
+    const timeSection = document.getElementById('time-slots-section');
+    const confirmBtn = document.getElementById('confirm-datetime-btn');
+    const nextBtn = document.querySelector('#step2 .next-button');
+
+    // Persist details
+    try{ sessionStorage.setItem('bookingDetails', JSON.stringify(details)); }catch(e){}
+
+    if(summaryText) summaryText.textContent = `${details.date} • ${details.time} • ${details.duration}h — $${details.totalPrice}`;
+    if(timeSection && summaryEl){ timeSection.style.display='none'; summaryEl.style.display='block'; }
+    if(confirmBtn) confirmBtn.style.display='none';
+    if(nextBtn){ nextBtn.style.display='block'; nextBtn.disabled = false; }
+  }
     
     function calculateTotalPrice(duration) {
         const basePrice = 150; // Base price per hour
@@ -1445,98 +1507,27 @@
     }
 
     function updateBookingPrice() {
-        const duration = parseInt(document.getElementById('duration-select').value);
-        const basePrice = 150; // Base price per hour
-        const totalPrice = basePrice * duration;
-        
-        const priceDisplay = document.getElementById('price-display');
-        if (priceDisplay) {
-            priceDisplay.textContent = `Estimated Price: $${totalPrice}`;
-        }
+    const sel = document.getElementById('duration-select');
+    if (!sel) return;
+    const duration = parseInt(sel.value);
+    const basePrice = 150; // Base price per hour
+    const totalPrice = basePrice * duration;
+
+    const priceDisplay = document.getElementById('price-display');
+    if (priceDisplay) {
+      priceDisplay.textContent = `Estimated Price: $${totalPrice}`;
+      priceDisplay.style.display = 'block';
+      try{ updateConfirmButton(); }catch(e){}
+    }
     }
 
     function nextStep(nextStep) {
         goToStep(nextStep);
     }
   </script>
-
-  <!-- Google Maps / Places: replace YOUR_GOOGLE_MAPS_API_KEY with real key -->
-  <script async src="https://maps.googleapis.com/maps/api/js?key=YOUR_GOOGLE_MAPS_API_KEY&libraries=places&callback=initMap"></script>
-  <script>
-    // Bowling Green, Ohio reference point
-    const FHC_ORIGIN = { lat: 41.3748, lng: -83.6513 };
-    const MAX_DISTANCE_MILES = 200; // radius limit
-    let map, marker, autocomplete, geocoder;
-
-    function initMap(){
-      const mapEl = document.getElementById('map');
-      if(!mapEl) return;
-      geocoder = new google.maps.Geocoder();
-      map = new google.maps.Map(mapEl, { center: FHC_ORIGIN, zoom: 7, mapTypeControl:false, streetViewControl:false });
-      marker = new google.maps.Marker({ map, position: FHC_ORIGIN });
-      const input = document.getElementById('location');
-      if(input){
-        autocomplete = new google.maps.places.Autocomplete(input, { fields: ['formatted_address','geometry','place_id','name'] });
-        autocomplete.addListener('place_changed', onPlaceChanged);
-      }
-      renderRadiusCircle();
-    }
-
-    function renderRadiusCircle(){
-      if(!map) return;
-      new google.maps.Circle({
-        strokeColor:'#007aff', strokeOpacity:0.6, strokeWeight:1.2,
-        fillColor:'#007aff', fillOpacity:0.08,
-        map, center:FHC_ORIGIN, radius: milesToMeters(MAX_DISTANCE_MILES)
-      });
-      new google.maps.Marker({ position:FHC_ORIGIN, map, icon:{ path:google.maps.SymbolPath.CIRCLE, scale:6, fillColor:'#007aff', fillOpacity:1, strokeWeight:1, strokeColor:'#fff' }, title:'Bowling Green, OH (Origin)' });
-    }
-
-    function milesToMeters(mi){ return mi * 1609.344; }
-    function metersToMiles(m){ return m / 1609.344; }
-
-    function haversineMiles(a,b){
-      const R = 6371e3; // meters
-      const toRad = d=>d*Math.PI/180;
-      const dLat = toRad(b.lat - a.lat);
-      const dLng = toRad(b.lng - a.lng);
-      const lat1 = toRad(a.lat); const lat2 = toRad(b.lat);
-      const h = Math.sin(dLat/2)**2 + Math.cos(lat1)*Math.cos(lat2)*Math.sin(dLng/2)**2;
-      return (2*R*Math.asin(Math.sqrt(h))) / 1609.344;
-    }
-
-    function onPlaceChanged(){
-      const place = autocomplete.getPlace();
-      const msgEl = document.getElementById('distance-message');
-      if(!place || !place.geometry){
-        msgEl.textContent = 'Location not found. Please choose from the dropdown.';
-        msgEl.style.color = '#b91c1c';
-        return;
-      }
-      const loc = { lat: place.geometry.location.lat(), lng: place.geometry.location.lng() };
-      const dist = haversineMiles(FHC_ORIGIN, loc);
-      map.setCenter(loc); map.setZoom(dist>120?7:10);
-      marker.setPosition(loc);
-      const within = dist <= MAX_DISTANCE_MILES;
-      if(within){
-        msgEl.textContent = `Distance from HQ: ${dist.toFixed(1)} miles (OK)`;
-        msgEl.style.color = '#15803d';
-        // persist into existing bookingDetails if already started
-        const details = JSON.parse(sessionStorage.getItem('bookingDetails')||'{}');
-        details.location = {
-          address: place.formatted_address || place.name || document.getElementById('location').value,
-          lat: loc.lat, lng: loc.lng, distanceMiles: parseFloat(dist.toFixed(2)), placeId: place.place_id
-        };
-        sessionStorage.setItem('bookingDetails', JSON.stringify(details));
-      } else {
-        msgEl.textContent = `Selected location is ${dist.toFixed(1)} miles away. We currently limit bookings to ${MAX_DISTANCE_MILES} miles of Bowling Green, OH.`;
-        msgEl.style.color = '#b91c1c';
-      }
-    }
-
-    // Expose for callback (Google invokes by name)
-    window.initMap = initMap;
   </script>
+
+  <!-- Map initialization now handled by Leaflet + booking.js (uses OpenStreetMap / Nominatim) -->
   <script>
     (function(){
       if(window.__fhcAnimInit) return; window.__fhcAnimInit=true;
