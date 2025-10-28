@@ -1352,11 +1352,29 @@
         timeSlots.forEach(time => {
           const slot = document.createElement('button');
           slot.className = 'time-slot';
+          slot.type = 'button';
           slot.textContent = time;
+          slot.dataset.time = time;
           slot.addEventListener('click', function() {
+            // Deselect previous and select this
             document.querySelectorAll('.time-slot').forEach(s => s.classList.remove('selected'));
             this.classList.add('selected');
+
+            // Update confirm state
             updateConfirmButton();
+
+            // If a duration is already chosen, auto-collapse into the summary
+            const durationVal = document.getElementById('duration-select')?.value;
+            const dateVal = document.querySelector('.flatpickr-input')?.value;
+            if (durationVal && dateVal) {
+              const bookingDetails = {
+                date: dateVal,
+                time: this.dataset.time,
+                duration: parseInt(durationVal),
+                totalPrice: calculateTotalPrice(durationVal)
+              };
+              showDatetimeSummary(bookingDetails);
+            }
           });
           timeSlotsContainer.appendChild(slot);
         });
@@ -1379,7 +1397,22 @@
         // wire duration change
         const sel = document.getElementById('duration-select');
         if (sel) {
-          sel.addEventListener('change', function(){ updateBookingPrice(); updateConfirmButton(); });
+          sel.addEventListener('change', function(){ 
+            updateBookingPrice(); 
+            updateConfirmButton();
+            // If user already picked a time, collapse into summary immediately
+            const timeEl = document.querySelector('.time-slot.selected');
+            const dateVal = document.querySelector('.flatpickr-input')?.value;
+            if (timeEl && dateVal) {
+              const bookingDetails = {
+                date: dateVal,
+                time: timeEl.textContent,
+                duration: parseInt(sel.value),
+                totalPrice: calculateTotalPrice(sel.value)
+              };
+              showDatetimeSummary(bookingDetails);
+            }
+          });
         }
         // initialize price (if any)
         setTimeout(()=>{ if(document.getElementById('duration-select')) updateBookingPrice(); },50);
